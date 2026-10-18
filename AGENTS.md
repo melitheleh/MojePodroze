@@ -31,8 +31,9 @@ właściciel nie poprosi o fazę 2.
 
 ## 3. Komendy
 
-Wszystkie komendy backendu z katalogu `backend/`. Venv PyCharm leży w katalogu głównym repo
-(`..\Scripts\python.exe`); alternatywnie własny `.venv`.
+Wszystkie komendy backendu z katalogu `backend/`, z aktywnym venv. Venv leży w `.venv/`
+w katalogu głównym repozytorium (bez aktywacji: `..\.venv\Scripts\python.exe -m pytest` itd.).
+Nie twórz venv w innych miejscach i nie commituj go.
 
 ```bash
 pip install -r requirements-dev.txt

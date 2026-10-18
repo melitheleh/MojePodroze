@@ -1,10 +1,4 @@
-# --- Środowisko wirtualne Pythona utworzone przez PyCharm w katalogu głównym repozytorium ---
-/Lib/
-/Scripts/
-/Include/
-/share/
-/pyvenv.cfg
-/CACHEDIR.TAG
+# --- Środowisko wirtualne Pythona (tworzone lokalnie w .venv/) ---
 .venv/
 venv/
 

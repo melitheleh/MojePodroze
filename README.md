@@ -9,6 +9,12 @@ w trakcie wyjazdu. Projekt zaliczeniowy z przedmiotu „Testowanie aplikacji web
 | Testy integracyjne backendu | późniejszy etap (faza 2) | pytest + TestClient, tymczasowa baza SQLite |
 | Frontend (GUI) | do zrobienia (faza 3) | React + Vite, React Router, Pico CSS |
 | Testy E2E | do zrobienia (faza 4) | Playwright (Python) |
+| Jakość kodu | skonfigurowane | Ruff, **SonarQube (lokalnie, Docker)**, GitHub Actions |
+
+**SonarQube jest podpięty do projektu:** backend ma gotową konfigurację analizy statycznej
+(`backend/sonar-project.properties`) z raportami pokrycia testami, wyników testów i uwag Ruffa,
+a serwer i skaner uruchamia się przez Docker Compose – instrukcja w sekcji
+[SonarQube (lokalnie)](#sonarqube-lokalnie).
 
 > **Uwaga o bezpieczeństwie:** logowanie jest celowo uproszczone (hasła zapisane w bazie jawnym
 > tekstem, id użytkownika w nagłówku `X-User-Id`, który łatwo podmienić) – to projekt szkoleniowy
@@ -22,18 +28,33 @@ Wymagania i analiza funkcjonalności: [docs/wymagania/](docs/wymagania/).
 
 ## Szybki start (backend, bez Dockera)
 
-Wymagany Python 3.13. Polecenia uruchamiaj z katalogu `backend/`.
+Wymagany Python 3.13. Środowisko wirtualne (venv) leży w katalogu `.venv/` w głównym katalogu
+repozytorium i nie trafia do gita – każdy tworzy je u siebie.
+
+**Pierwsze uruchomienie** (PowerShell, z katalogu głównego repozytorium):
 
 ```powershell
+python -m venv .venv                                                       # venv (jednorazowo)
+.venv\Scripts\python.exe -m pip install -r backend\requirements-dev.txt   # biblioteki
+```
+
+**Uruchomienie serwera:**
+
+```powershell
+.venv\Scripts\Activate.ps1      # aktywacja venv (Linux/macOS: source .venv/bin/activate)
 cd backend
-python -m venv .venv
-.venv\Scripts\activate            # Linux/macOS: source .venv/bin/activate
-pip install -r requirements-dev.txt
 uvicorn app.main:app --reload
 ```
 
-> W PyCharm venv projektu jest w katalogu głównym repozytorium (`Scripts/`, `Lib/`) – wtedy wystarczy
-> `..\Scripts\python -m pip install -r requirements-dev.txt` i `..\Scripts\python -m uvicorn app.main:app --reload`.
+> Gdy PowerShell zgłosi, że wykonywanie skryptów jest wyłączone, wykonaj raz
+> `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` albo pomiń aktywację i wywołuj Pythona
+> pełną ścieżką: `..\.venv\Scripts\python.exe -m uvicorn app.main:app --reload` (z katalogu `backend/`).
+>
+> **PyCharm:** *File → Settings → Project → Python Interpreter → Add Interpreter → Add Local
+> Interpreter → Existing* i wskaż `.venv\Scripts\python.exe`. Terminal PyCharma aktywuje venv sam.
+>
+> Pozostałe polecenia w tym README (`pytest`, `ruff`, `alembic`) zakładają aktywny venv
+> i katalog `backend/`.
 
 Przy starcie aplikacja sama wykonuje migracje bazy (`alembic upgrade head`) i tworzy plik
 `backend/data/moje_podroze.db` oraz katalog na zdjęcia `backend/data/uploads/`.
@@ -274,8 +295,24 @@ GitHub Actions (`.github/workflows/backend.yml`) uruchamia Ruff i testy przy ka�
 
 ### SonarQube (lokalnie)
 
-Wymaga Dockera. Projekt backendu analizowany jest z katalogu `backend/` (plik
-`backend/sonar-project.properties`); frontend dostanie własny projekt w kolejnej fazie.
+Statyczna analiza kodu w lokalnym SonarQube (Community Edition), bez konta w chmurze.
+
+**Co jest skonfigurowane:**
+
+| Element | Plik | Opis |
+|---|---|---|
+| Projekt Sonara | `backend/sonar-project.properties` | klucz `moje-podroze-backend`, źródła `app/` i `migrations/`, testy `tests/`, Python 3.13 |
+| Pokrycie testami | `backend/coverage.xml` | raport z `pytest --cov` |
+| Wyniki testów | `backend/test-results.xml` | raport JUnit z pytest |
+| Uwagi lintera | `backend/ruff-report.json` | raport Ruffa importowany do Sonara |
+| Wykluczenia | `backend/sonar-project.properties` | migracje bez wymagań pokrycia i bez wykrywania duplikatów |
+| Serwer SonarQube | `docker-compose.yml` → `sonarqube` (profil `sonar`) | http://localhost:9000, dane w wolumenach Dockera |
+| Skaner | `docker-compose.yml` → `sonar-scanner-backend` (profil `sonar-scan`) | analizuje katalog `backend/`, token z `SONAR_TOKEN` |
+
+Frontend dostanie w kolejnej fazie własny projekt Sonara (`moje-podroze-frontend`).
+
+**Wymagania:** Docker Desktop (na Windows z WSL 2) i ok. 4 GB RAM dla kontenera SonarQube.
+Kroki 2–3 wykonuje się tylko raz.
 
 1. Uruchom serwer: `docker compose --profile sonar up -d` i poczekaj ok. 1–2 min.
 2. Otwórz http://localhost:9000, zaloguj się `admin` / `admin` i ustaw nowe hasło.
@@ -294,6 +331,13 @@ Wymaga Dockera. Projekt backendu analizowany jest z katalogu `backend/` (plik
 6. Wyniki: http://localhost:9000/dashboard?id=moje-podroze-backend
 
 Zatrzymanie: `docker compose --profile sonar down` (dane Sonara zostają w wolumenach).
+
+Wśród *Security Hotspots* może pojawić się hasło zapisane jawnym tekstem – to świadome
+uproszczenie projektu (patrz uwaga o bezpieczeństwie na początku), można je oznaczyć jako *Safe*
+z komentarzem.
+
+Bez serwera: wtyczka **SonarQube for IDE** (dawniej SonarLint) w PyCharm pokazuje uwagi Sonara
+na bieżąco w edytorze (bez pokrycia testami i bez dashboardu).
 
 ---
 

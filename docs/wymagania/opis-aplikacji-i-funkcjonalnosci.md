@@ -2,6 +2,7 @@
 
 Analiza wymagań na podstawie plików `domena_projektu.txt` i `wymagania.txt` (18.10.2026).
 Etap analizy, bez kodu. Wersja 2: wprowadzone decyzje Darka z 18.10.2026 (sekcja 4).
+Wersja 3 (18.10.2026): testy integracyjne przeniesione na późniejszy etap (sekcja 2.10, decyzja 8).
 
 ## 1. Opis aplikacji
 
@@ -128,7 +129,7 @@ i klasy pochodne. Nowy rodzaj pozycji dodaje się bez zmiany kosztorysu.
 |---|---|
 | Jednostkowe backend (pytest) | maszyna stanów (dozwolone kroki do przodu i wstecz, zabronione przeskoki), reguła tylko do odczytu dla archiwum, reguły sekcji dla typu, kosztorys, średnie ocen, porównanie z budżetem, ranking rekomendacji, parsowanie odpowiedzi API pogody i NBP |
 | Jednostkowe frontend (Vitest + Testing Library) | formatowanie kwot i dat, komponenty formularzy i widżetów, walidacja po stronie klienta |
-| Integracyjne (pytest + TestClient) | endpointy na prawdziwej bazie SQLite (testowej), autoryzacja i izolacja danych użytkowników, upload zdjęć, zewnętrzne API podmienione atrapami |
+| Integracyjne (pytest + TestClient) | endpointy na prawdziwej bazie SQLite (testowej), autoryzacja i izolacja danych użytkowników, upload zdjęć, zewnętrzne API podmienione atrapami. **Tworzone na późniejszym etapie** (sekcja 2.10) |
 | Mutacyjne (mutmut) | moduł domenowy (statusy, kosztorys, oceny, rekomendacje) |
 | E2E (Playwright, Python) | pełne życie podróży: rejestracja, utworzenie podróży, lot, przejazd, posiłek, zdjęcie, zmiana statusów, archiwum i sprawdzenie kosztorysu; test, że lotu nie da się dodać do podróży krajowej |
 | Manualne | dokument ze scenariuszami: kroki i oczekiwany wynik, w tym czytelność UI i zachowanie przy braku internetu |
@@ -137,6 +138,36 @@ Frontend wzorcowo pod Playwright: atrybut `data-testid` na każdym elemencie int
 wyniku (np. `trip-card-{id}`, `cost-total`), semantyczny HTML, etykiety `<label>` przy polach,
 role ARIA, stabilne komunikaty błędów, brak selektorów opartych na klasach CSS. W testach wzorzec
 Page Object.
+
+### 2.10 Testy integracyjne (planowane na późniejszy etap)
+
+Backend etapu 1 ma wyłącznie testy jednostkowe (moduł domenowy, parsowanie odpowiedzi API pogody
+i NBP, typ kwot, zapis plików, walidacja danych wejściowych). Testy integracyjne powstaną
+w osobnym, późniejszym etapie, w katalogu `backend/tests/integration/`. Do tego czasu próg pokrycia
+kodu jest obniżony do 60%; po ich dodaniu wraca do 90%.
+
+Sposób działania:
+- pytest + `TestClient` z FastAPI: zapytania przechodzą przez całe API (nagłówek `X-User-Id`,
+  walidacja, serwisy, baza), tak jak z frontendu,
+- każdy test dostaje własną, świeżą bazę SQLite w katalogu tymczasowym; schemat powstaje przez
+  prawdziwe migracje Alembic (raz na sesję do pliku-wzorca, potem kopia pliku dla każdego testu),
+- zewnętrzne API (Open-Meteo, NBP) podmienione atrapami, które potrafią też zasymulować awarię,
+- „dzisiejsza” data zamrożona (podmiana zależności), żeby odliczanie i domyślny dzień zdjęcia
+  dawały powtarzalne wyniki.
+
+Zakres:
+
+| Obszar | Co sprawdzić |
+|---|---|
+| Konto | rejestracja, logowanie, zajęty login (409), brak lub zły nagłówek `X-User-Id` (401), profil i miasto pogody |
+| Podróże | CRUD, izolacja danych (cudza podróż → 404 dla każdego endpointu), domyślna lista pakowania dla zagranicznej, blokada zmiany typu na krajową, gdy są loty |
+| Statusy i archiwum | kroki do przodu i wstecz, zakaz przeskoków (409), każdy zapis do archiwum → 409, odczyt archiwum (kosztorys, album) działa, po cofnięciu do „zrealizowanej” edycja znów możliwa |
+| Sekcje pozycji | pełny CRUD pięciu sekcji, lot w podróży krajowej → 409, walidacja ocen i kwot, nieistniejące id ze słownika → 422 |
+| Plan, listy, pamiętnik | punkt planu poza terminem podróży → 422, odhaczanie „chcę odwiedzić” i pakowania (PATCH), pamiętnik |
+| Zdjęcia | upload na dysk, album według dni, pobieranie pliku, odrzucenie plików niebędących zdjęciami i za dużych, usunięcie pliku razem ze zdjęciem i podróżą |
+| Kosztorys, rekomendacje, statystyki | sumy i alert budżetu na danych z bazy, rekomendacje z wcześniejszych podróży do miasta, zapytania agregujące w statystykach, ekran główny i odliczanie |
+| Zewnętrzne API | pogoda, wyszukiwanie miasta, kursy walut, kalkulator; awaria API → 503, a reszta aplikacji działa |
+| Migracje i dokumentacja | migracje zgodne z modelami, cofanie migracji, dane słownikowe, Swagger/OpenAPI, jednolity format błędów, CORS |
 
 ## 3. Proponowane nowe funkcjonalności
 
@@ -172,7 +203,9 @@ Wybrałem tylko takie, które są tanie w implementacji i dają dodatkowy materi
 | 5 | Cofanie statusu | **Można cofać.** Przyjmuję: o jeden krok wstecz, także z archiwum do zrealizowanej; bez przeskakiwania etapów. |
 | 6 | Pogoda na stronie głównej | Użytkownik **wybiera miasto w widżecie** i widzi jego pogodę; wybór zapamiętany, domyślnie Warszawa. |
 | 7 | Logowanie | Bardzo proste: login i hasło zapisane w bazie jawnym tekstem, bez hashowania i tokenów; id użytkownika w nagłówku `X-User-Id`. |
+| 8 | Testy integracyjne | **Tworzone na późniejszym etapie** (sekcja 2.10). Backend etapu 1 ma tylko testy jednostkowe. |
 
 ## 5. Kolejne kroki
 1. Model danych: tabele i relacje.
 2. Założenie repozytorium ze szkieletem (backend, frontend, Docker Compose, CI, SonarQube, README, AGENTS.md).
+3. Testy integracyjne backendu (sekcja 2.10) – na późniejszym etapie; plan w `AGENTS.md`.

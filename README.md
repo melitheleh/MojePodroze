@@ -5,9 +5,10 @@ w trakcie wyjazdu. Projekt zaliczeniowy z przedmiotu „Testowanie aplikacji web
 
 | Część | Stan | Technologia |
 |---|---|---|
-| Backend (API, logika, baza) | **gotowy – etap 1** | Python 3.13, FastAPI, SQLAlchemy 2, Alembic, SQLite |
-| Frontend (GUI) | do zrobienia (faza 2) | React + Vite, React Router, Pico CSS |
-| Testy E2E | do zrobienia (faza 3) | Playwright (Python) |
+| Backend (API, logika, baza) + testy jednostkowe | **gotowy – etap 1** | Python 3.13, FastAPI, SQLAlchemy 2, Alembic, SQLite, pytest |
+| Testy integracyjne backendu | późniejszy etap (faza 2) | pytest + TestClient, tymczasowa baza SQLite |
+| Frontend (GUI) | do zrobienia (faza 3) | React + Vite, React Router, Pico CSS |
+| Testy E2E | do zrobienia (faza 4) | Playwright (Python) |
 
 > **Uwaga o bezpieczeństwie:** logowanie jest celowo uproszczone (hasła zapisane w bazie jawnym
 > tekstem, id użytkownika w nagłówku `X-User-Id`, który łatwo podmienić) – to projekt szkoleniowy
@@ -100,8 +101,8 @@ backend/
 │   └── core/              # błędy aplikacji i jednolity format odpowiedzi błędów
 ├── migrations/            # Alembic (schemat + dane słownikowe)
 └── tests/
-    ├── unit/              # domena, parsery API, schematy, typ Money, zapis plików
-    └── integration/       # API + prawdziwa (tymczasowa) baza SQLite + atrapy zewnętrznych API
+    └── unit/              # domena, parsery API, schematy, typ Money, zapis plików
+                           # (tests/integration/ – w późniejszym etapie, patrz AGENTS.md)
 ```
 
 Zasady:
@@ -217,7 +218,8 @@ alembic downgrade -1                                   # cofnij ostatnią migrac
 ```
 
 Reset lokalnej bazy: zatrzymaj aplikację i usuń katalog `backend/data/`.
-Test `tests/integration/test_migrations.py` pilnuje, żeby migracje były zgodne z modelami.
+Zgodność migracji z modelami: `alembic upgrade head && alembic check` (oczekiwane „No new upgrade
+operations detected”). W fazie testów integracyjnych dojdzie automatyczny test.
 
 ---
 
@@ -225,10 +227,9 @@ Test `tests/integration/test_migrations.py` pilnuje, żeby migracje były zgodne
 
 ```bash
 cd backend
-pytest                       # wszystkie testy (419)
-pytest -m unit               # tylko jednostkowe (274) – bez bazy i sieci, ~3 s
-pytest -m integration        # tylko integracyjne (145) – API + prawdziwa baza SQLite
-pytest --cov                 # z raportem pokrycia (próg: 90%, obecnie ~99%)
+pytest                       # wszystkie testy (obecnie 274 jednostkowe, ~3 s)
+pytest -m unit               # tylko jednostkowe – bez bazy i sieci
+pytest --cov                 # z raportem pokrycia (moduł domenowy: 100%, całość: ~64%)
 pytest --cov --cov-report=html   # raport HTML w backend/htmlcov/
 ```
 
@@ -237,8 +238,13 @@ pytest --cov --cov-report=html   # raport HTML w backend/htmlcov/
 | Jednostkowe | `tests/unit/domain` | maszyna stanów (kroki do przodu/wstecz, zabronione przeskoki), archiwum, reguły sekcji dla typu, kosztorys, progi budżetu 89/90/100/101%, średnie ocen, ranking rekomendacji, odliczanie z „zamrożoną” datą, statystyki, kalkulator walut |
 | Jednostkowe | `tests/unit/integrations` | parsowanie odpowiedzi Open-Meteo i NBP, obsługa błędów, klient HTTP z `httpx.MockTransport` |
 | Jednostkowe | `tests/unit/infrastructure` | typ `Money`, rozpoznawanie formatu zdjęcia, zapis plików, walidacja schematów |
-| Integracyjne | `tests/integration` | wszystkie endpointy na prawdziwej bazie SQLite (świeża kopia dla każdego testu, schemat z migracji), izolacja danych użytkowników, upload zdjęć, archiwum, atrapy API pogody i NBP (także ich awaria), migracje, Swagger |
+| Integracyjne | `tests/integration` (**późniejszy etap**) | endpointy na prawdziwej bazie SQLite (świeża kopia dla każdego testu, schemat z migracji), izolacja danych użytkowników, upload zdjęć, archiwum, atrapy API pogody i NBP (także ich awaria), migracje, Swagger |
 | Mutacyjne | `mutmut` na `app/domain` | jakość testów jednostkowych domeny (patrz niżej) |
+
+Testy integracyjne są zaplanowane na późniejszy etap (decyzja 8 w
+`docs/wymagania/opis-aplikacji-i-funkcjonalnosci.md`, plan w `AGENTS.md`, faza 2). Do tego czasu
+próg pokrycia w `backend/pyproject.toml` wynosi 60% (API, serwisy i warstwa bazy nie mają jeszcze
+testów automatycznych); po ich dodaniu wraca do 90%.
 
 ### Testy mutacyjne (mutmut)
 

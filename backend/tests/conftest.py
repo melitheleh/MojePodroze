@@ -1,6 +1,7 @@
 """Wspólna konfiguracja testów: automatyczne znaczniki ``unit`` / ``integration`` wg katalogu.
 
 Uruchamianie wybranego poziomu: ``pytest -m unit`` albo ``pytest -m integration``.
+Katalog ``tests/integration/`` powstanie w późniejszym etapie (patrz AGENTS.md).
 """
 
 from pathlib import Path

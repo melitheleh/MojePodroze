@@ -31,9 +31,8 @@ jobs:
         run: ruff check .
       - name: Ruff (format)
         run: ruff format --check .
-      - name: Testy jednostkowe
-        run: pytest -m unit
-      - name: Testy integracyjne + pokrycie
+      # Testy integracyjne zostaną dodane w późniejszym etapie (AGENTS.md, faza 2).
+      - name: Testy + pokrycie
         run: pytest --cov --cov-report=xml --junitxml=test-results.xml
       - uses: actions/upload-artifact@v4
         if: always()

@@ -31,7 +31,13 @@ właściciel nie poprosi o fazę 2.
 
 ## 3. Komendy
 
-Wszystkie komendy backendu z katalogu `backend/`, z aktywnym venv. Venv leży w `.venv/`
+Najprościej: skróty z katalogu głównego repozytorium – `make <polecenie>` (`Makefile` na
+Linux/macOS/CI, `make.bat` na Windows; w PowerShell `.\make <polecenie>`), lista: `make help`.
+Najważniejsze: `make install`, `make run`, `make test`, `make check` (lint + testy jak w CI).
+**Nowe polecenie dodawaj w obu plikach jednocześnie** i dopisz je do tabeli w README.
+`make.bat` musi mieć końce linii CRLF i tylko znaki ASCII.
+
+Ręcznie: komendy backendu z katalogu `backend/`, z aktywnym venv. Venv leży w `.venv/`
 w katalogu głównym repozytorium (bez aktywacji: `..\.venv\Scripts\python.exe -m pytest` itd.).
 Nie twórz venv w innych miejscach i nie commituj go.
 

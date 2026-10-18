@@ -31,20 +31,65 @@ Wymagania i analiza funkcjonalności: [docs/wymagania/](docs/wymagania/).
 Wymagany Python 3.13. Środowisko wirtualne (venv) leży w katalogu `.venv/` w głównym katalogu
 repozytorium i nie trafia do gita – każdy tworzy je u siebie.
 
+### Najprościej: skróty `make`
+
+Z katalogu głównego repozytorium, **bez aktywowania venv**:
+
+| Terminal | Jak wywołać | Plik |
+|---|---|---|
+| Windows – cmd (`C:\...>`, domyślny terminal PyCharma) | `make test` | `make.bat` (nic nie trzeba instalować) |
+| Windows – PowerShell (`PS C:\...>`) | `.\make test` | `make.bat` |
+| Linux / macOS / CI | `make test` | `Makefile` (GNU make) |
+
+| Polecenie | Co robi |
+|---|---|
+| `make install` | tworzy `.venv` i instaluje biblioteki (pierwsze uruchomienie) |
+| `make run` | uruchamia serwer: http://localhost:8000/docs |
+| `make test` | wszystkie testy (pytest) |
+| `make test-unit` | tylko testy jednostkowe |
+| `make cov` / `make cov-html` | testy z pokryciem kodu w konsoli / jako strona `backend\htmlcov\index.html` |
+| `make lint` / `make format` | Ruff: sprawdzenie / poprawienie kodu |
+| `make check` | lint + testy z pokryciem (to samo co CI) |
+| `make migrate` / `make migration-check` | migracje bazy / zgodność migracji z modelami |
+| `make reset-db` | usuwa lokalną bazę i zdjęcia (pyta o potwierdzenie) |
+| `make sonar-up` / `make sonar` / `make sonar-down` | SonarQube: start serwera / analiza (wymaga `SONAR_TOKEN`) / stop |
+| `make mutation` | testy mutacyjne mutmut (Docker) |
+| `make docker-up` / `make docker-down` | backend w Dockerze |
+| `make clean` | usuwa cache i wygenerowane raporty |
+| `make help` | lista wszystkich poleceń |
+
+Dodatkowe argumenty dla pytesta: na Windows `make test -k status`, w `Makefile`
+`make test ARGS="-k status"`.
+
+### Ręcznie, krok po kroku
+
 **Pierwsze uruchomienie** (PowerShell, z katalogu głównego repozytorium):
 
 ```powershell
-python -m venv .venv                                                       # venv (jednorazowo)
+py -3.13 -m venv .venv                                                     # venv (jednorazowo)
 .venv\Scripts\python.exe -m pip install -r backend\requirements-dev.txt   # biblioteki
 ```
+
+> Na Windows używaj launchera `py` (instaluje się razem z Pythonem z python.org). Samo `python`
+> działa tylko wtedy, gdy przy instalacji zaznaczono „Add python.exe to PATH”; inaczej Windows
+> otwiera Microsoft Store. Linux/macOS: `python3 -m venv .venv`.
 
 **Uruchomienie serwera:**
 
 ```powershell
-.venv\Scripts\Activate.ps1      # aktywacja venv (Linux/macOS: source .venv/bin/activate)
+.venv\Scripts\Activate.ps1      # aktywacja venv w PowerShell (prompt zaczyna się od „PS”)
 cd backend
 uvicorn app.main:app --reload
 ```
+
+| Terminal | Aktywacja venv (z katalogu głównego repozytorium) |
+|---|---|
+| PowerShell (`PS C:\...>`) | `.venv\Scripts\Activate.ps1` |
+| Wiersz poleceń cmd (`C:\...>`, domyślny terminal PyCharma) | `.venv\Scripts\activate.bat` |
+| Linux/macOS | `source .venv/bin/activate` |
+
+Po aktywacji prompt zaczyna się od `(.venv)`. Bez aktywacji działa zawsze pełna ścieżka,
+z katalogu `backend/`: `..\.venv\Scripts\python.exe -m uvicorn app.main:app --reload`.
 
 > Gdy PowerShell zgłosi, że wykonywanie skryptów jest wyłączone, wykonaj raz
 > `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` albo pomiń aktywację i wywołuj Pythona

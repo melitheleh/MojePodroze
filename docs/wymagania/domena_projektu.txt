@@ -1,0 +1,70 @@
+Alikacja "Moje podróże" - to aplikacja webowa, otwierana w przeglądarce. Jest to osobisty planner podróży, połączony z rodzajem pamiętnika odwiedzonych miejsc oraz organizer w podróży. Do uzytkoosobistego, nie jest to aplikacja biura podróży. Ma 2 warianty:
+Wariant podstawowy
+
+Aplikacja to osobisty planer i dziennik podróży, który użytkownik wypełnia wyłącznie sam. W sekcji “Moje podróże” tworzy wyjazd z nazwą, celem i datami, a dla przyszłych podróży może zapisać prosty plan: listę miejsc, które chce odwiedzić, i planowany budżet. W trakcie i po wyjeździe prowadzi pamiętnik w formie wpisów z datą, wgrywa zdjęcia do galerii podróży, dodaje odwiedzone miejsca (restauracje, atrakcje, noclegi) z oceną od 1 do 5 i krótką notatką oraz rejestruje wydatki z kategorią i kwotą, a aplikacja pokazuje sumę kosztów z podziałem na kategorie i porównanie z planowanym budżetem. Rekomendacje w tej wersji opierają się na własnych ocenach: przy planowaniu kolejnego wyjazdu do tego samego miasta aplikacja podpowiada najlepiej ocenione wcześniej restauracje i miejsca, a także przypomina te, które zostały dodane do listy “chcę odwiedzić”, ale nie zostały jeszcze zaliczone.
+
+Taki zakres to kilka prostych encji (użytkownik, podróż, wpis, zdjęcie, miejsce, ocena, wydatek) z typowymi operacjami tworzenia, odczytu, edycji i usuwania, więc całość da się zrobić w kilka tygodni. Testy jednostkowe obejmą sumowanie wydatków, porównanie z budżetem, średnie ocen i logikę podpowiedzi, testy integracyjne sprawdzą API na prawdziwej bazie razem z autoryzacją (każdy użytkownik widzi wyłącznie swoje dane), a testy e2e przejdą główną ścieżkę: utworzenie podróży z planem, dodanie wpisu, zdjęcia, ocenionej restauracji i wydatku, a na końcu sprawdzenie podsumowania kosztów.
+
+Wariant zaawansowany
+
+W tej wersji planer ma pełny plan dzień po dniu, z godzinami i przypisanymi miejscami, a po wyjeździe plan zestawia się z tym, co faktycznie się wydarzyło. Pamiętnik staje się osią czasu, która łączy wpisy, zdjęcia, miejsca i wydatki z każdego dnia, a całość jest widoczna na mapie z pinezkami odwiedzonych miejsc i trasą przejazdu. Zdjęcia są automatycznie przypisywane do dnia i lokalizacji na podstawie metadanych EXIF, z generowaniem miniatur. Wydatki można wprowadzać w obcych walutach, a aplikacja przelicza je na złotówki według kursu z API NBP z dnia wydatku i pokazuje statystyki, takie jak średni koszt dnia czy porównanie kosztów różnych wyjazdów. Rekomendacje łączą własne oceny z danymi zewnętrznymi: przy planowaniu dnia aplikacja podpowiada pobliskie restauracje i atrakcje z OpenStreetMap, sortując je według odległości i podobieństwa do miejsc, które użytkownik wcześniej wysoko ocenił. Gotową relację można wyeksportować do PDF albo udostępnić linkiem tylko do odczytu, ale dane wciąż należą wyłącznie do autora.
+
+Ten wariant daje dużo bogatszy materiał do testów, ale wymaga wyraźnie więcej pracy. Testy jednostkowe mają tu własną, sensowną logikę: zestawienie planu z realizacją, przeliczanie walut z zaokrągleniami, odczyt EXIF i dopasowanie zdjęcia do dnia, liczenie odległości oraz ranking rekomendacji. Testy integracyjne obejmą upload plików, zapytania statystyczne na bazie i komunikację z zewnętrznymi API (NBP i OpenStreetMap) podmienionymi atrapami, a testy e2e mogą przejść pełny cykl od zaplanowania wyjazdu, przez prowadzenie dziennika w jego trakcie, po eksport gotowej relacji. Rozsądnie jest zrobić najpierw wariant podstawowy, a elementy zaawansowane dokładać kolejno, jeśli zostanie czas.
+
+
+Moje podróże i cykl życia podróży
+
+Głównym ekranem jest okno “Moje podróże”, w którym podróże są pogrupowane według statusu: w planie, w trakcie i zrealizowane. Podróż przechodzi przez te statusy w ustalonej kolejności: zaczyna się jako plan, w trakcie wyjazdu jest aktywna, a po powrocie staje się zrealizowana. Na tym etapie wciąż można ją uzupełniać, bo zwykle dopisuje się zaległe koszty, oceny i zdjęcia już po powrocie. Dopiero świadome zamknięcie podróży przenosi ją do archiwum, gdzie jest dostępna do przeglądania razem z kosztorysem, oceną zbiorczą i albumem, ale nie można jej już edytować.
+
+Typ i charakter podróży
+
+Każda podróż ma dwie cechy. Pierwsza to typ: krajowa albo zagraniczna. Druga to charakter wyjazdu, na przykład góry albo morze, a listę tę łatwo rozszerzyć o kolejne wartości, takie jak miasto czy jeziora. Typ decyduje o tym, jakie sekcje pojawiają się w podróży: zagraniczna dostaje dodatkową sekcję lotniskową, krajowa jej nie ma. Charakter służy głównie do filtrowania i statystyk, na przykład porównania, ile kosztują wyjazdy w góry w stosunku do wyjazdów nad morze.
+
+Sekcje podróży
+
+Plan i loty (tylko podróże zagraniczne). Sekcja zawiera kalendarz z planem podróży dzień po dniu oraz listę lotów z numerem lotu, lotniskiem wylotu i przylotu, datami i godzinami. Lot jest pozycją z kosztem jak każda inna, więc trafia do kosztorysu.
+
+Transport. Wspólna dla obu typów podróży. Wpisujesz środek transportu (samochód, pociąg, autobus, prom, taksówka itd.), trasę, datę, koszt i ocenę. W podróży krajowej to główna sekcja dotycząca przemieszczania się, w zagranicznej uzupełnia loty o transport na miejscu.
+
+Posiłki. Każdy wpis opisuje, co jadłeś i gdzie, z datą i kosztem, a do tego ma dwie osobne oceny: posiłku i restauracji. Rozdzielenie ocen ma sens, bo w dobrej restauracji można trafić na słabe danie i odwrotnie, a przy kolejnych wyjazdach przydaje się wiedza, które miejsce było dobre jako całość.
+
+Zdjęcia i album. Zdjęcia możesz dodawać w dowolnym momencie podróży, a aplikacja automatycznie układa z nich album, uporządkowany według dat. W prostszej wersji wystarczy data dodania lub ręcznie wybrany dzień, w bardziej zaawansowanej data i miejsce mogą być odczytywane z metadanych zdjęcia.
+
+Kosztorys i ocena zbiorcza
+
+Zasada jest jedna dla całej aplikacji: każda pozycja, czyli lot, przejazd, posiłek czy inny element, ma koszt i ocenę. Na tej podstawie podróż ma pełny kosztorys z sumą całkowitą i podziałem na sekcje (loty, transport, posiłki itd.), a także ocenę zbiorczą. Ocena zbiorcza jest liczona ze wszystkich ocen pozycji, a obok niej warto pokazać średnie dla poszczególnych sekcji, bo sama jedna liczba niewiele mówi: wyjazd z fantastycznym jedzeniem i fatalnym transportem może mieć przeciętną średnią.
+
+Dlaczego to dobry projekt pod testy
+
+Ten opis daje bardzo konkretne miejsca do testowania. Przejścia statusów (plan, w trakcie, zrealizowana, archiwum) to maszyna stanów z dozwolonymi i zabronionymi przejściami, idealna na testy jednostkowe, podobnie jak reguła “archiwum jest tylko do odczytu”. Zależność sekcji od typu podróży daje dobre testy walidacji, na przykład próba dodania lotu do podróży krajowej musi zakończyć się błędem, a zmiana typu z zagranicznej na krajową musi zostać jakoś obsłużona. Kosztorys i oceny zbiorcze to czysta logika obliczeniowa, a test e2e może przejść całe życie podróży: utworzenie, dodanie lotu, przejazdu i posiłku, wgranie zdjęć, zamknięcie i sprawdzenie kosztorysu w archiwum.
+
+Do potwierdzenia
+
+Przyjąłem trzy założenia. Po pierwsze, że “zrealizowane” i “archiwum” to dwa różne etapy: zrealizowaną podróż jeszcze uzupełniasz, archiwalnej już nie. Po drugie, że ocena zbiorcza to zwykła średnia ze wszystkich ocen, bez wag dla sekcji. Po trzecie, że koszty podajesz w złotówkach, a waluty obce to ewentualnie rozszerzenie na później. Daj znać, czy to się zgadza, a w kolejnym kroku przygotuję model danych, czyli tabele i relacje między nimi.
+
+
+Technologia:
+
+Tak, to bardzo dobre połączenie dla Twojego projektu. React z Vite na froncie i FastAPI w Pythonie na backendzie spełniają wymaganie o osobnym frontendzie i backendzie w najbardziej czytelny sposób, obie technologie są na liście wykładowcy, a żadna z nich nie wprowadza zbędnej złożoności. Zyskujesz też to, że cała ważna logika (statusy podróży, reguły dla typów podróży, kosztorys, oceny zbiorcze i polimorficzne klasy pozycji) jest w Pythonie, gdzie najwygodniej robi się testy jednostkowe, integracyjne i mutacyjne, a React odpowiada tylko za to, co widzi użytkownik.
+
+Kompletny zestaw wygląda więc tak. Backend to Python z FastAPI, SQLAlchemy i bazą SQLite, ze zdjęciami zapisywanymi w katalogu na dysku. Frontend to React z Vite, React Router, wbudowany fetch i Pico CSS, w zwykłym JavaScripcie. Testy jednostkowe i integracyjne piszesz w pytest z raportem pokrycia z pytest-cov, testy mutacyjne robisz przez mutmut na module z logiką domenową, testy E2E w Playwright dla Pythona, a testy manualne jako dokument ze scenariuszami w repozytorium. Całość spina Ruff i jeden workflow w GitHub Actions, a Docker i SonarCloud to opcjonalne dodatki na koniec.
+
+Jedyne zastrzeżenie, które nadal pozostaje otwarte, to SSR. Jeśli wykładowca uzna go za obowiązkowy, React z Vite tego nie zapewnia i trzeba by przejść na Next.js, co, jak pisałem wcześniej, wyraźnie zwiększa złożoność frontendu. Warto więc to potwierdzić, zanim zaczniesz pisać kod. Jeśli SSR nie jest wymagany, możemy w kolejnym kroku przejść do modelu danych, czyli tabel i relacji dla podróży, lotów, przejazdów, posiłków i zdjęć.
+
+Testy:
+
+Jest to projekt na zaliczenie na studia, wiec nie będzie komercjalizowany. Trzeba tu pokazać wszystkie dobre praktyli dobrego i pełnego testowania. Poziomy testów są w tym drugim pliku. Frontend ma być pisany wzorcowo, z id oraz innymi dobrymi praktykami wspierającymi testy e2e na GUI w playwright. Mają być też testy jednostkowe na każdym poziomie oraz testy interacyjne. 
+
+
+Dodaj Doker compose jeśli to przyspieszy i pomoże na szybkie uruchamianie całej aplikacji. 
+
+dodaj konfiguracjie Sonnar Cube do lokalnego uruchamiania i statycznej analizy kodu. 
+
+Dodaj i utrzymuj pliki dokumentacyjne: readme, agents.md
+
+Wyjasnienie wątpliwości
+1. SSR jest wspomniany ale nie obowiązkowy, nie implementujemy.
+2. Daj wykorzystanie zewnętrznego api z pogodą na oknie głównym aplikacji oraz kursy walut: EURO, DOLAR I FUNT do złotego polskiego, obok pogody. 
+3. Nie ma exportu do plików, to niepotrzebne. 
+
+

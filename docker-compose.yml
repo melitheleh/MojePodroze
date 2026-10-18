@@ -1,0 +1,59 @@
+# Moje podróże – uruchamianie lokalne.
+#
+#   docker compose up -d --build                     # backend: http://localhost:8000/docs
+#   docker compose run --rm backend-dev              # wszystkie testy (pytest) w kontenerze
+#   docker compose run --rm backend-dev mutmut run   # testy mutacyjne (Linux w kontenerze)
+#   docker compose --profile sonar up -d             # SonarQube: http://localhost:9000
+#   docker compose run --rm sonar-scanner-backend    # analiza backendu (wymaga SONAR_TOKEN)
+#
+# Szczegóły: README.md. Frontend (React + Vite) zostanie dodany w kolejnej fazie (AGENTS.md).
+
+name: moje-podroze
+
+services:
+  backend:
+    build:
+      context: ./backend
+      target: runtime
+    ports:
+      - "8000:8000"
+    environment:
+      MP_CORS_ORIGINS: '["http://localhost:5173","http://127.0.0.1:5173"]'
+    volumes:
+      - backend-data:/app/data # baza SQLite i zdjęcia przetrwają restart
+
+  backend-dev:
+    profiles: ["dev"]
+    build:
+      context: ./backend
+      target: dev
+    volumes:
+      - ./backend:/app # kod z dysku: raporty (coverage.xml, mutants/) trafiają do backend/
+    command: ["pytest", "--cov", "--cov-report=xml", "--junitxml=test-results.xml"]
+
+  sonarqube:
+    profiles: ["sonar"]
+    image: sonarqube:community
+    ports:
+      - "9000:9000"
+    environment:
+      SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
+    volumes:
+      - sonarqube-data:/opt/sonarqube/data
+      - sonarqube-extensions:/opt/sonarqube/extensions
+      - sonarqube-logs:/opt/sonarqube/logs
+
+  sonar-scanner-backend:
+    profiles: ["sonar-scan"] # uruchamiany jednorazowo przez `docker compose run`
+    image: sonarsource/sonar-scanner-cli:latest
+    environment:
+      SONAR_HOST_URL: http://sonarqube:9000
+      SONAR_TOKEN: ${SONAR_TOKEN:-}
+    volumes:
+      - ./backend:/usr/src # skaner czyta backend/sonar-project.properties
+
+volumes:
+  backend-data:
+  sonarqube-data:
+  sonarqube-extensions:
+  sonarqube-logs:

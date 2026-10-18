@@ -1,0 +1,9 @@
+# Zależności deweloperskie: testy, pokrycie, lint, testy mutacyjne.
+-r requirements.txt
+pytest==9.1.1
+pytest-cov==7.1.0
+# klient HTTP używany przez starlette.testclient (następca httpx w testach)
+httpx2==2.13.1
+ruff==0.17.1
+# mutmut 3.x działa tylko na Linuksie/macOS (na Windows: WSL albo Docker, patrz README).
+mutmut==3.8.0

@@ -1,0 +1,37 @@
+# --- Środowisko wirtualne Pythona utworzone przez PyCharm w katalogu głównym repozytorium ---
+/Lib/
+/Scripts/
+/Include/
+/share/
+/pyvenv.cfg
+/CACHEDIR.TAG
+.venv/
+venv/
+
+# --- IDE ---
+.idea/
+.vscode/
+
+# --- Python / testy / jakość ---
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+test-results.xml
+ruff-report.json
+mutants/
+.scannerwork/
+
+# --- Dane lokalne aplikacji (baza SQLite, zdjęcia) i sekrety ---
+backend/data/
+.env
+
+# --- Frontend (kolejna faza) ---
+node_modules/
+frontend/dist/
+playwright-report/
+test-results/

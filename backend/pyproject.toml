@@ -1,0 +1,74 @@
+# Konfiguracja narzędzi backendu. Zależności są w requirements*.txt.
+
+[project]
+name = "moje-podroze-backend"
+version = "1.0.0"
+description = "Backend (FastAPI) aplikacji Moje podróże"
+requires-python = ">=3.13"
+
+# --- pytest -------------------------------------------------------------------------------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = ["-ra", "--strict-markers", "--strict-config"]
+markers = [
+    "unit: szybkie testy jednostkowe bez bazy i sieci",
+    "integration: testy API na prawdziwej (tymczasowej) bazie SQLite",
+]
+filterwarnings = ["error::DeprecationWarning:app.*"]
+
+# --- coverage -----------------------------------------------------------------------------
+[tool.coverage.run]
+source = ["app"]
+branch = true
+relative_files = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+fail_under = 90
+exclude_also = ["if TYPE_CHECKING:", "raise NotImplementedError"]
+
+[tool.coverage.xml]
+output = "coverage.xml"
+
+# --- Ruff (lint + formatowanie) -----------------------------------------------------------
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+extend-exclude = ["mutants"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W",  # pycodestyle
+    "F",       # pyflakes
+    "I",       # isort
+    "B",       # bugbear
+    "UP",      # pyupgrade
+    "N",       # pep8-naming
+    "SIM",     # upraszczanie
+    "C4",      # comprehensions
+    "PT",      # styl pytest
+    "S",       # bezpieczeństwo (bandit)
+    "FAST",    # dobre praktyki FastAPI
+    "RUF",
+]
+ignore = [
+    "RUF001", "RUF002", "RUF003",  # polskie znaki i typograficzne cudzysłowy w tekstach
+    # trip_id z adresu jest czytany w zależności OwnedTrip (app/api/deps.py), a nie w sygnaturze
+    "FAST003",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "S105", "S106", "S107"]  # assert i „hasła” w danych testowych
+"migrations/versions/*" = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+# --- mutmut (testy mutacyjne modułu domenowego) -------------------------------------------
+# Uruchamiane na Linuksie / WSL / w kontenerze: `mutmut run`, wyniki: `mutmut results`.
+[tool.mutmut]
+source_paths = ["app/"]
+only_mutate = ["app/domain/*"]
+pytest_add_cli_args_test_selection = ["tests/unit/domain"]

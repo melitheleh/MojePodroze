@@ -1,0 +1,31 @@
+Wymagania projektu
+Technologie frontendowe i backendowe są do wyboru, ale projekt musi mieć frontend i backend.
+
+Frontend — część aplikacji, którą widzi użytkownik: strony, formularze, przyciski. Działa w przeglądarce.
+Backend — część działająca na serwerze: logika aplikacji, baza danych i API, z którego korzysta frontend.
+Testy
+Testy jednostkowe — sprawdzają jeden mały fragment kodu (funkcję, metodę, klasę) w oderwaniu od reszty systemu, bez bazy danych i sieci. Są szybkie i uruchamia się je często (np. pytest, Vitest, Jest, PHPUnit).
+Testy integracyjne — sprawdzają, czy kilka części systemu działa poprawnie razem, np. endpoint API z logiką aplikacji i prawdziwą bazą danych.
+Testy mutacyjne — sprawdzają jakość samych testów. Narzędzie celowo wprowadza do kodu drobne błędy (tzw. mutanty, np. zamienia > na >=) i sprawdza, czy testy je wykryją. Mutant, którego testy nie wykryły, oznacza lukę w testach (np. mutmut dla Pythona, Stryker dla JavaScriptu, Infection dla PHP).
+Testy E2E (end-to-end) — sprawdzają aplikację tak, jak używa jej człowiek: od kliknięcia w przeglądarce, przez frontend i backend, aż do bazy danych i z powrotem (np. Playwright, Cypress).
+Testy manualne — wykonuje je człowiek, ręcznie klikając w aplikację według scenariusza: kroki do wykonania i oczekiwany wynik. Wychwytują to, czego trudno szukać automatycznie, np. nieczytelny interfejs.
+Pojęcia
+OOP (programowanie obiektowe) — sposób pisania kodu, w którym program składa się z obiektów. Każdy obiekt łączy dane (pola) i działania na nich (metody). Obiekty tworzy się na podstawie klas. Główne zasady: hermetyzacja, dziedziczenie, abstrakcja i polimorfizm.
+Polimorfizm — ta sama metoda działa różnie, zależnie od obiektu. Przykład: klasy CardPayment i BlikPayment mają tę samą metodę pay(), ale każda płaci inaczej. Kod wywołuje payment.pay() i nie musi wiedzieć, jaki to rodzaj płatności. Nowy rodzaj płatności dodaje się bez zmieniania istniejącego kodu.
+SSR (Server-Side Rendering) — renderowanie po stronie serwera. Serwer składa gotowy HTML strony i wysyła go do przeglądarki, zamiast pustego szkieletu, który dopiero JavaScript wypełnia w przeglądarce (CSR, Client-Side Rendering). Treść pokazuje się szybciej, a strona jest lepiej widoczna dla wyszukiwarek. SSR dają m.in. Next.js i Nuxt.
+Technologie do wyboru
+Języki
+
+Python — czytelny język programowania, popularny w backendzie, analizie danych i sztucznej inteligencji.
+JavaScript — język przeglądarek. Dzięki Node.js działa też na serwerze, więc nadaje się i na frontend, i na backend.
+Frontend
+
+Vue — framework JavaScript do budowy interfejsu z komponentów, łatwy na początek.
+React — biblioteka JavaScript od firmy Meta do budowy interfejsu z komponentów. Komponenty pisze się w JSX (HTML wewnątrz JavaScriptu).
+Next.js — framework oparty na Reakcie. Dodaje SSR, routing oparty na plikach i możliwość pisania API w tym samym projekcie.
+Nuxt — odpowiednik Next.js dla Vue: framework oparty na Vue z SSR i routingiem opartym na plikach.
+Backend
+
+FastAPI — framework Pythona do szybkiego tworzenia API. Sprawdza dane na podstawie typów i sam tworzy dokumentację API (Swagger).
+Django — duży framework Pythona z gotowymi elementami: ORM do bazy danych, panel administracyjny, logowanie użytkowników i szablony HTML.
+Laravel — framework języka PHP: routing, ORM Eloquent, migracje bazy danych i logowanie użytkowników.

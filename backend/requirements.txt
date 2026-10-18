@@ -1,0 +1,8 @@
+# Zależności uruchomieniowe backendu (wersje przypięte dla powtarzalności).
+fastapi==0.143.5
+uvicorn[standard]==0.54.0
+sqlalchemy==2.1.5
+alembic==1.20.0
+pydantic-settings==2.16.0
+httpx==0.28.1
+python-multipart==0.0.32

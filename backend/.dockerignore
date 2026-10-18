@@ -1,0 +1,11 @@
+data/
+mutants/
+.pytest_cache/
+.ruff_cache/
+**/__pycache__/
+.coverage
+coverage.xml
+test-results.xml
+ruff-report.json
+.scannerwork/
+.env

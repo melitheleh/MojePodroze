@@ -48,6 +48,8 @@ frontend/src/
 
   /* przyciski i akcent */
   --color-accent: #5f7a6c;               /* szałwia: przycisk główny, aktywna zakładka, fokus */
+  --color-accent-hover: #4e6658;         /* ciemniejsza szałwia: przycisk główny po najechaniu i z fokusem */
+  --color-accent-active: #9fb8a6;        /* jasna szałwia: przycisk główny w chwili kliknięcia, tekst --color-text */
   --color-btn-secondary-border: #5f7a6c; /* przycisk poboczny: biały z obrysem */
 
   /* linie */
@@ -149,19 +151,25 @@ Kontrasty (sprawdzone, minimum dla tekstu 4,5 : 1):
 | tekst #27302c na bieli | 13,6 : 1 |
 | opis #5f6b65 na bieli | 5,6 : 1 |
 | biały tekst na szałwii #5f7a6c | 4,7 : 1 |
+| biały tekst na ciemniejszej szałwii #4e6658 (najechanie, fokus) | 6,2 : 1 |
+| tekst #27302c na jasnej szałwii #9fb8a6 (kliknięcie) | 6,4 : 1 |
 | tryb ciemny: tekst #e8ece9 na karcie #212b26 | 12,2 : 1 |
 | tryb ciemny: opis #a7b3ac na karcie | 6,7 : 1 |
 | tryb ciemny: aktywna opcja #f6d6e5 na #3a2a33 | 10,1 : 1 |
 | linia pola #7d8882 na bieli / #7a8680 na #18201c | 3,7 : 1 / 4,4 : 1 |
 
-Fokus (kryterium 2.4.7):
+Fokus (kryterium 2.4.7) – miękka poświata zamiast ramki; przycisk główny dodatkowo ciemnieje
+(`--color-accent-hover`). Przezroczysty `outline` zostaje dla trybu wysokiego kontrastu Windows,
+w którym cienie są ukrywane:
 
 ```css
 a:focus-visible,
 button:focus-visible {
-  outline: 3px solid var(--focus-ring);
-  outline-offset: 3px;
+  outline: 2px solid transparent;
   border-radius: var(--radius-button);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--focus-ring) 45%, transparent),
+    0 0 14px 4px color-mix(in srgb, var(--focus-ring) 60%, transparent);
 }
 input:focus,
 select:focus {
@@ -185,12 +193,14 @@ Zasady przy kodowaniu:
 
 Elementy interaktywne mają `data-testid`, np. `trip-card`, `status-tab-planned`, `status-tab-in-progress`,
 `status-tab-completed`, `status-tab-archived`, `btn-new-trip`, `input-search`, `input-weather-city`,
-`input-eur-amount`, `eur-result`, `widget-next-trip`, `widget-weather`, `widget-nbp`,
+`input-convert-amount`, `convert-result`, `widget-next-trip`, `widget-weather`, `widget-nbp`,
 `weather-error`, `weather-retry`, `theme-light`, `theme-dark`, `nav-trips`, `nav-stats`, `btn-logout`,
 `trip-status`, `countdown`, `weather-current`, `trips-loading`, `trips-error`, `trips-retry`, `trips-empty`,
 `login-form`, `input-login`, `input-password`, `btn-login`, `btn-register`, `login-error`, `error-login`,
 `error-password`, `weather-loading`, `weather-city-name`, `btn-weather-search`, `weather-search-error`,
-`weather-city-results`, `weather-city-option-{n}` (n = 0, 1, 2… w kolejności wyników).
+`weather-city-results`, `weather-city-option-{n}` (n = 0, 1, 2… w kolejności wyników),
+`rates-loading`, `rates-error`, `rates-retry`, `rates-list`, `rate-{KOD}` (np. `rate-EUR`, przycisk wyboru waluty z `aria-pressed`), `rates-date`,
+`convert-amount-error`, `convert-error`.
 
 ## Do dopilnowania
 

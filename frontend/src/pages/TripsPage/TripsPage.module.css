@@ -66,11 +66,32 @@
   color: var(--color-text-on-accent);
   font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.15s ease;
+  transition: background-color 0.15s ease;
 }
 
-.primary:hover {
-  opacity: 0.9;
+/* Najechanie myszką i fokus z klawiatury: ciemniejsza szałwia */
+.primary:hover:not(:disabled),
+.primary:focus-visible {
+  background: var(--color-accent-hover);
+}
+
+/* W chwili kliknięcia: jasna szałwia z ciemnym tekstem (biały na jasnym nie spełnia AA) */
+.primary:active:not(:disabled) {
+  background: var(--color-accent-active);
+  color: var(--color-text);
+}
+
+/* Niższy przycisk – w jednym rzędzie z polem w widżecie */
+.compact {
+  height: 40px;
+  padding: 0 18px;
+}
+
+/* Zajęty (np. trwa wyszukiwanie) */
+.primary:disabled,
+.secondary:disabled {
+  cursor: wait;
+  opacity: 0.7;
 }
 
 /* Zakładki statusów */
@@ -194,17 +215,39 @@
   gap: 10px;
 }
 
+/* Kursy jako „pigułki” – kliknięta waluta trafia do kalkulatora */
 .rates {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 24px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  font-size: 18px;
+  gap: 8px;
 }
 
-.rates abbr {
+.ratePill {
+  padding: 6px 14px;
+  border: 1.5px solid var(--color-btn-secondary-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* Poświata fokusu w kształcie pigułki (globalnie przyciski mają --radius-button) */
+.ratePill:focus-visible {
+  border-radius: 999px;
+}
+
+.ratePill:hover {
+  background: var(--color-divider);
+}
+
+.ratePill[aria-pressed="true"] {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: var(--color-text-on-accent);
+}
+
+.ratePill abbr {
+  font-weight: 700;
   text-decoration: none;
 }
 
@@ -266,4 +309,8 @@
   color: var(--color-text);
   font-weight: 600;
   cursor: pointer;
+}
+
+.secondary:hover {
+  background: var(--color-divider);
 }

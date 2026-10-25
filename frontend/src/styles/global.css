@@ -43,12 +43,15 @@ img {
   display: block;
 }
 
-/* Fokus – WCAG 2.0, kryterium 2.4.7 */
+/* Fokus – WCAG 2.0, kryterium 2.4.7: miękka poświata zamiast ramki.
+   Przezroczysty outline zostaje dla trybu wysokiego kontrastu (tam cienie znikają). */
 a:focus-visible,
 button:focus-visible {
-  outline: 3px solid var(--focus-ring);
-  outline-offset: 3px;
+  outline: 2px solid transparent;
   border-radius: var(--radius-button);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--focus-ring) 45%, transparent),
+    0 0 14px 4px color-mix(in srgb, var(--focus-ring) 60%, transparent);
 }
 
 input:focus,

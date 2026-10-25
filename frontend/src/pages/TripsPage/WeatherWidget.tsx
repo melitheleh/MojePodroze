@@ -135,8 +135,13 @@ export default function WeatherWidget() {
             aria-describedby={searchError ? `${id}-error` : undefined}
             data-testid="input-weather-city"
           />
-          <button type="submit" className={styles.secondary} disabled={busy} data-testid="btn-weather-search">
-            Szukaj
+          <button
+            type="submit"
+            className={`${styles.primary} ${styles.compact}`}
+            disabled={busy}
+            data-testid="btn-weather-search"
+          >
+            {busy ? "Szukam…" : "Szukaj"}
           </button>
         </div>
         {searchError && (

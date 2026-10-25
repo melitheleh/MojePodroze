@@ -112,11 +112,19 @@
   border: 0;
   background: var(--color-accent);
   color: var(--color-text-on-accent);
-  transition: opacity 0.15s ease;
+  transition: background-color 0.15s ease;
 }
 
-.primary:hover {
-  opacity: 0.9;
+/* Najechanie myszką i fokus z klawiatury: ciemniejsza szałwia */
+.primary:hover:not(:disabled),
+.primary:focus-visible {
+  background: var(--color-accent-hover);
+}
+
+/* W chwili kliknięcia: jasna szałwia z ciemnym tekstem (biały na jasnym nie spełnia AA) */
+.primary:active:not(:disabled) {
+  background: var(--color-accent-active);
+  color: var(--color-text);
 }
 
 .secondary {

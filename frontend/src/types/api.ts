@@ -81,3 +81,19 @@ export interface ExchangeRate {
   currency: string;
   mid: number;
 }
+
+/** GET /api/exchange-rates */
+export interface ExchangeRates {
+  table_no: string;
+  effective_date: string; // RRRR-MM-DD
+  rates: ExchangeRate[];
+}
+
+/** GET /api/exchange-rates/convert */
+export interface Conversion {
+  amount: number;
+  currency: string;
+  rate: number;
+  amount_pln: number;
+  effective_date: string;
+}

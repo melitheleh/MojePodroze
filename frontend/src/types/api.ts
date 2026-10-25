@@ -47,6 +47,35 @@ export interface Dashboard {
   countdown: Countdown | null;
 }
 
+export interface WeatherCity {
+  name: string;
+  country: string | null;
+  latitude: number;
+  longitude: number;
+}
+
+/** Wynik wyszukiwania miasta: GET /api/weather/cities */
+export interface CitySearchResult extends WeatherCity {
+  region: string | null;
+}
+
+export interface CurrentWeather {
+  temperature_c: number;
+  apparent_temperature_c: number | null;
+  relative_humidity: number | null;
+  wind_speed_kmh: number | null;
+  weather_code: number;
+  description: string;
+  is_day: boolean | null;
+  observed_at: string;
+}
+
+/** GET /api/weather/current */
+export interface WeatherResponse {
+  city: WeatherCity;
+  weather: CurrentWeather;
+}
+
 export interface ExchangeRate {
   code: string;
   currency: string;

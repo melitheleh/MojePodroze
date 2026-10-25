@@ -136,6 +136,64 @@
   font-weight: 700;
 }
 
+.weatherCity {
+  font-weight: 600;
+}
+
+/* Widżet pogody: wyszukiwanie miasta */
+.citySearch {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.citySearchRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.fieldError {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-error-text);
+}
+
+.cityList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cityOption {
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: var(--radius-small);
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cityOption:hover {
+  background: var(--color-divider);
+}
+
+.widgetError {
+  padding: 14px 16px;
+  border-radius: var(--radius-small);
+  background: var(--color-error-bg);
+  color: var(--color-error-text);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
 .rates {
   display: flex;
   flex-wrap: wrap;

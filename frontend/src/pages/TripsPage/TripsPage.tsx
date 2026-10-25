@@ -1,7 +1,7 @@
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
-import type { TripStatus } from "../../types/api";
-import { mockDashboard } from "../../data/mockDashboard";
+import type { Dashboard, TripStatus } from "../../types/api";
+import { api, ApiError } from "../../api/client";
 import TripCard from "../../components/TripCard/TripCard";
 import NextTripWidget from "./NextTripWidget";
 import WeatherWidget from "./WeatherWidget";
@@ -22,9 +22,47 @@ const EMPTY_TEXT: Record<TripStatus, string> = {
   archived: "Archiwum jest puste.",
 };
 
+type LoadState =
+  | { status: "loading" }
+  | { status: "ready"; data: Dashboard }
+  | { status: "error"; message: string };
+
 export default function TripsPage() {
-  // TODO: zamienić na dane z GET /api/dashboard
-  const dashboard = mockDashboard;
+  const [load, setLoad] = useState<LoadState>({ status: "loading" });
+  const [reloadKey, setReloadKey] = useState(0);
+
+  // Pobranie danych ekranu z GET /api/dashboard (ponownie po kliknięciu „Spróbuj ponownie”)
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .get<Dashboard>("/dashboard")
+      .then((data) => {
+        if (!cancelled) setLoad({ status: "ready", data });
+      })
+      .catch((error: unknown) => {
+        if (cancelled) return;
+        const message =
+          error instanceof ApiError && error.status === 401
+            ? "Nie jesteś zalogowana. Zaloguj się, aby zobaczyć swoje podróże."
+            : error instanceof ApiError
+              ? error.message
+              : "Nie udało się wczytać podróży.";
+        setLoad({ status: "error", message });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadKey]);
+
+  function retry() {
+    setLoad({ status: "loading" });
+    setReloadKey((key) => key + 1);
+  }
+
+  const dashboard: Dashboard =
+    load.status === "ready"
+      ? load.data
+      : { trips: { planned: [], in_progress: [], completed: [], archived: [] }, countdown: null };
 
   const [active, setActive] = useState<TripStatus>("planned");
   const [query, setQuery] = useState("");
@@ -38,7 +76,7 @@ export default function TripsPage() {
 
   // Strzałki w lewo/prawo przełączają zakładki (wzorzec WAI-ARIA „Tabs”)
   function onTabKeyDown(event: KeyboardEvent<HTMLButtonElement>, index: number) {
-    let next = index;
+    let next: number;
     if (event.key === "ArrowRight") next = (index + 1) % TABS.length;
     else if (event.key === "ArrowLeft") next = (index - 1 + TABS.length) % TABS.length;
     else if (event.key === "Home") next = 0;
@@ -93,7 +131,7 @@ export default function TripsPage() {
                 className={selected ? `${styles.tab} ${styles.tabActive}` : styles.tab}
                 onClick={() => setActive(tab.status)}
                 onKeyDown={(e) => onTabKeyDown(e, index)}
-                data-testid={`status-tab-${tab.status}`}
+                data-testid={`status-tab-${tab.status.replace("_", "-")}`}
               >
                 {tab.label} {dashboard.trips[tab.status].length}
               </button>
@@ -107,7 +145,18 @@ export default function TripsPage() {
           aria-labelledby={`${idPrefix}-tab-${active}`}
           className={styles.list}
         >
-          {trips.length > 0 ? (
+          {load.status === "loading" ? (
+            <p className={styles.empty} role="status" data-testid="trips-loading">
+              Wczytywanie podróży…
+            </p>
+          ) : load.status === "error" ? (
+            <div className={styles.error} role="alert" data-testid="trips-error">
+              <p>{load.message}</p>
+              <button type="button" className={styles.secondary} onClick={retry} data-testid="trips-retry">
+                Spróbuj ponownie
+              </button>
+            </div>
+          ) : trips.length > 0 ? (
             trips.map((trip) => <TripCard key={trip.id} trip={trip} />)
           ) : (
             <p className={styles.empty} data-testid="trips-empty">

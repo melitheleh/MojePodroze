@@ -5,7 +5,9 @@ const city: Trip["character"] = { id: 3, code: "city", name: "Miasto" };
 const mountains: Trip["character"] = { id: 1, code: "mountains", name: "Góry" };
 const sea: Trip["character"] = { id: 2, code: "sea", name: "Morze" };
 
-function trip(partial: Omit<Trip, "status_label" | "trip_type_label" | "allowed_transitions">): Trip {
+function trip(
+  partial: Omit<Trip, "status_label" | "trip_type_label" | "allowed_transitions" | "is_read_only" | "available_sections">,
+): Trip {
   const labels = {
     planned: "w planie",
     in_progress: "w trakcie",
@@ -17,6 +19,10 @@ function trip(partial: Omit<Trip, "status_label" | "trip_type_label" | "allowed_
     status_label: labels[partial.status],
     trip_type_label: partial.trip_type === "foreign" ? "zagraniczna" : "krajowa",
     allowed_transitions: [],
+    is_read_only: partial.status === "archived",
+    available_sections: partial.trip_type === "foreign"
+      ? ["flights", "transport", "meals", "places", "expenses"]
+      : ["transport", "meals", "places", "expenses"],
   };
 }
 

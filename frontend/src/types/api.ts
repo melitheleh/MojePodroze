@@ -2,6 +2,7 @@
 
 export type TripStatus = "planned" | "in_progress" | "completed" | "archived";
 export type TripType = "domestic" | "foreign";
+export type Section = "flights" | "transport" | "meals" | "places" | "expenses";
 
 export interface DictionaryEntry {
   id: number;
@@ -24,6 +25,8 @@ export interface Trip {
   trip_type_label: string;
   duration_days: number;
   allowed_transitions: TripStatus[];
+  is_read_only: boolean;
+  available_sections: Section[];
 }
 
 export interface Countdown {

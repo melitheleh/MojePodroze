@@ -1,0 +1,72 @@
+// Klient API: jedno miejsce, które rozmawia z backendem.
+// Dokleja nagłówek X-User-Id i zamienia błędy z API na ApiError z polskim komunikatem.
+
+const USER_ID_KEY = "userId";
+const BACKEND_DOWN = "Brak połączenia z serwerem. Sprawdź, czy backend działa (make run).";
+
+export function getUserId(): string | null {
+  return localStorage.getItem(USER_ID_KEY);
+}
+
+export function setUserId(id: number): void {
+  localStorage.setItem(USER_ID_KEY, String(id));
+}
+
+export function clearUserId(): void {
+  localStorage.removeItem(USER_ID_KEY);
+}
+
+/** Błąd zwrócony przez API: {"detail": "komunikat", "code": "STAŁY_KOD"} */
+export class ApiError extends Error {
+  status: number;
+  code: string;
+
+  constructor(status: number, code: string, message: string) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.code = code;
+  }
+}
+
+async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
+  const headers: Record<string, string> = { Accept: "application/json" };
+  const userId = getUserId();
+  if (userId) headers["X-User-Id"] = userId;
+  if (body !== undefined) headers["Content-Type"] = "application/json";
+
+  let response: Response;
+  try {
+    response = await fetch(`/api${path}`, {
+      method,
+      headers,
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+  } catch {
+    throw new ApiError(0, "NETWORK_ERROR", BACKEND_DOWN);
+  }
+
+  // 502/504 zwraca serwer Vite, gdy backend nie jest uruchomiony
+  if (response.status === 502 || response.status === 504) {
+    throw new ApiError(response.status, "NETWORK_ERROR", BACKEND_DOWN);
+  }
+
+  if (response.status === 204) return undefined as T;
+
+  const data = await response.json().catch(() => null);
+  if (!response.ok) {
+    throw new ApiError(
+      response.status,
+      data?.code ?? "UNKNOWN_ERROR",
+      data?.detail ?? `Serwer zwrócił błąd ${response.status}.`,
+    );
+  }
+  return data as T;
+}
+
+export const api = {
+  get: <T>(path: string) => request<T>("GET", path),
+  post: <T>(path: string, body?: unknown) => request<T>("POST", path, body),
+  put: <T>(path: string, body?: unknown) => request<T>("PUT", path, body),
+  delete: <T>(path: string) => request<T>("DELETE", path),
+};

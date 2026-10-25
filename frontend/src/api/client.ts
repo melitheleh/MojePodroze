@@ -4,6 +4,10 @@
 const USER_ID_KEY = "userId";
 const BACKEND_DOWN = "Brak połączenia z serwerem. Sprawdź, czy backend działa (make run).";
 
+/** Zdarzenie wysyłane, gdy backend nie rozpozna użytkownika – RequireAuth przenosi wtedy na logowanie. */
+export const LOGOUT_EVENT = "app:logout";
+const SESSION_INVALID_CODES = ["AUTH_REQUIRED", "INVALID_USER"];
+
 export function getUserId(): string | null {
   return localStorage.getItem(USER_ID_KEY);
 }
@@ -54,6 +58,13 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   if (response.status === 204) return undefined as T;
 
   const data = await response.json().catch(() => null);
+
+  // Brak lub nieważne id użytkownika (np. po wyczyszczeniu bazy) → wyloguj
+  if (response.status === 401 && SESSION_INVALID_CODES.includes(data?.code)) {
+    clearUserId();
+    window.dispatchEvent(new Event(LOGOUT_EVENT));
+  }
+
   if (!response.ok) {
     throw new ApiError(
       response.status,

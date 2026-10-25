@@ -4,6 +4,11 @@ export type TripStatus = "planned" | "in_progress" | "completed" | "archived";
 export type TripType = "domestic" | "foreign";
 export type Section = "flights" | "transport" | "meals" | "places" | "expenses";
 
+export interface User {
+  id: number;
+  login: string;
+}
+
 export interface DictionaryEntry {
   id: number;
   code: string;

@@ -150,9 +150,7 @@ npx tsc -b           # sprawdzenie typów TypeScript
 Zapytania na `/api/...` serwer Vite przekazuje do backendu na `http://127.0.0.1:8000`
 (proxy w `frontend/vite.config.ts`).
 
-> Ekranu logowania jeszcze nie ma. Do tego czasu ustaw id użytkownika w konsoli przeglądarki
-> (F12 → Console): `localStorage.setItem("userId", "1")` i odśwież stronę. Użytkownika
-> o tym id załóż wcześniej w Swaggerze (`POST /api/auth/register`).
+Na ekranie logowania (`/logowanie`) można od razu założyć konto przyciskiem „Zarejestruj się”.
 
 ---
 

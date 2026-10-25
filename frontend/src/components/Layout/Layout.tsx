@@ -1,4 +1,5 @@
-import { Link, NavLink, Outlet } from "react-router";
+import { Link, NavLink, Outlet, useNavigate } from "react-router";
+import { clearUserId } from "../../api/client";
 import styles from "./Layout.module.css";
 
 function navClass({ isActive }: { isActive: boolean }) {
@@ -6,6 +7,13 @@ function navClass({ isActive }: { isActive: boolean }) {
 }
 
 export default function Layout() {
+  const navigate = useNavigate();
+
+  function logout() {
+    clearUserId();
+    navigate("/logowanie", { replace: true });
+  }
+
   return (
     <>
       <header className={styles.header}>
@@ -21,7 +29,7 @@ export default function Layout() {
               Statystyki
             </NavLink>
           </nav>
-          <button type="button" className={styles.logout} data-testid="btn-logout">
+          <button type="button" className={styles.logout} onClick={logout} data-testid="btn-logout">
             Wyloguj
           </button>
         </div>

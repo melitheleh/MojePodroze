@@ -187,7 +187,9 @@ Elementy interaktywne mają `data-testid`, np. `trip-card`, `status-tab-planned`
 `status-tab-completed`, `status-tab-archived`, `btn-new-trip`, `input-search`, `input-weather-city`,
 `input-eur-amount`, `eur-result`, `widget-next-trip`, `widget-weather`, `widget-nbp`,
 `weather-error`, `weather-retry`, `theme-light`, `theme-dark`, `nav-trips`, `nav-stats`, `btn-logout`,
-`trip-status`, `countdown`, `weather-current`, `trips-loading`, `trips-error`, `trips-retry`, `trips-empty`.
+`trip-status`, `countdown`, `weather-current`, `trips-loading`, `trips-error`, `trips-retry`, `trips-empty`,
+`login-form`, `input-login`, `input-password`, `btn-login`, `btn-register`, `login-error`, `error-login`,
+`error-password`.
 
 ## Do dopilnowania
 

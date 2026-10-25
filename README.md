@@ -7,7 +7,7 @@ w trakcie wyjazdu. Projekt zaliczeniowy z przedmiotu „Testowanie aplikacji web
 |---|---|---|
 | Backend (API, logika, baza) + testy jednostkowe | **gotowy – etap 1** | Python 3.13, FastAPI, SQLAlchemy 2, Alembic, SQLite, pytest |
 | Testy integracyjne backendu | późniejszy etap (faza 2) | pytest + TestClient, tymczasowa baza SQLite |
-| Frontend (GUI) | do zrobienia (faza 3) | React + Vite, React Router, Pico CSS |
+| Frontend (GUI) | do zrobienia (faza 3) | React + Vite, React Router, CSS Modules + tokeny CSS; styl „Trouvaille” ([docs/design](docs/design/README.md)), WCAG 2.0 AA |
 | Testy E2E | do zrobienia (faza 4) | Playwright (Python) |
 | Jakość kodu | skonfigurowane | Ruff, **SonarQube (lokalnie, Docker)**, GitHub Actions |
 
@@ -23,6 +23,7 @@ a serwer i skaner uruchamia się przez Docker Compose – instrukcja w sekcji
 Instrukcje dla agentów AI i plan kolejnych faz: [AGENTS.md](AGENTS.md).
 Lista endpointów pod ekrany GUI: [docs/api.md](docs/api.md).
 Wymagania i analiza funkcjonalności: [docs/wymagania/](docs/wymagania/).
+Styl wizualny frontendu – makiety 11 ekranów, kolory, typografia, tokeny CSS: [docs/design/](docs/design/README.md).
 
 ---
 

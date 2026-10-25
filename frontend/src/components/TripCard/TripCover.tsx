@@ -5,9 +5,15 @@ import styles from "./TripCard.module.css";
 
 const PLACEHOLDERS = 5;
 
-// Okładka karty: pierwsze zdjęcie podróży (GET /api/trips/{id}/photos → plik przez fetch → blob).
-// Bez zdjęć albo przy błędzie zostaje kolor zastępczy. Dekoracja – opis podróży jest w tekście karty.
-export default function TripCover({ tripId }: { tripId: number }) {
+interface Props {
+  tripId: number;
+  /** Klasa kontenera – domyślnie okładka karty; ekran szczegółów podaje własną (szeroki baner) */
+  className?: string;
+}
+
+// Okładka: pierwsze zdjęcie podróży (GET /api/trips/{id}/photos → plik przez fetch → blob).
+// Bez zdjęć albo przy błędzie zostaje kolor zastępczy. Dekoracja – opis podróży jest w tekście obok.
+export default function TripCover({ tripId, className = styles.cover }: Props) {
   const [src, setSrc] = useState<string | null>(null);
 
   useEffect(() => {
@@ -32,7 +38,7 @@ export default function TripCover({ tripId }: { tripId: number }) {
 
   const placeholder = `var(--placeholder-${(tripId % PLACEHOLDERS) + 1})`;
   return (
-    <div className={styles.cover} style={{ background: placeholder }} aria-hidden="true">
+    <div className={className} style={{ background: placeholder, position: "relative" }} aria-hidden="true">
       {src && <img src={src} alt="" className={styles.coverImage} data-testid="trip-cover-photo" />}
     </div>
   );

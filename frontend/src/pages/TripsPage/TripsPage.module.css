@@ -58,6 +58,10 @@
 }
 
 .primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   height: 46px;
   padding: 0 24px;
   border: 0;
@@ -79,6 +83,16 @@
 .primary:active:not(:disabled) {
   background: var(--color-accent-active);
   color: var(--color-text);
+}
+
+/* Ikona w przycisku (np. plus w „Nowa podróż”): obrót o 90° po najechaniu i z fokusem */
+.primary svg {
+  transition: transform 0.25s ease;
+}
+
+.primary:hover:not(:disabled) svg,
+.primary:focus-visible svg {
+  transform: rotate(90deg);
 }
 
 /* Niższy przycisk – w jednym rzędzie z polem w widżecie */

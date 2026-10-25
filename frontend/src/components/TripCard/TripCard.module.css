@@ -1,4 +1,5 @@
 .card {
+  position: relative;
   display: flex;
   min-height: 142px;
   text-decoration: none;
@@ -16,6 +17,34 @@
 
 .card:focus-visible {
   border-radius: var(--radius-card);
+  transform: translateY(-2px);
+}
+
+/* Okrągła strzałka w prawym dolnym rogu okładki – widoczna zawsze (także na telefonie) */
+.arrow {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--color-surface) 75%, transparent);
+  color: var(--color-text);
+  box-shadow: 0 2px 8px rgba(39, 48, 44, 0.18);
+}
+
+/* Strzałka wskazuje ukośnie w górę i w prawo (↗) */
+.arrow svg {
+  transform: rotate(-45deg);
+  transition: transform 0.25s ease;
+}
+
+/* Najechanie i fokus z klawiatury: strzałka obraca się do poziomu (→), kółko zostaje na miejscu */
+.card:hover .arrow svg,
+.card:focus-visible .arrow svg {
+  transform: rotate(0deg);
 }
 
 .body {
@@ -41,7 +70,6 @@
 
 .cover {
   flex: 0 0 38%;
-  position: relative;
 }
 
 .coverImage {

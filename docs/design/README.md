@@ -134,12 +134,14 @@ Przycisk główny w obu trybach: tło `--color-accent` (#5f7a6c), biały tekst.
 ## Układ (jak w makietach)
 
 - Górny pasek: logo, „Moje podróże”, „Statystyki”, po prawej „Wyloguj”; cienka linia pod spodem.
-- Lista podróży: kolumna główna (wyszukiwarka + „+ Nowa podróż”, zakładki statusów z licznikami,
+- Lista podróży: kolumna główna (wyszukiwarka + „Nowa podróż” z ikoną plusa – obraca się o 90° po najechaniu, zakładki statusów z licznikami,
   karty) i kolumna widżetów (najbliższa podróż, pogoda, kursy NBP).
 - Karta podróży: tekst po lewej (status, tytuł, daty · typ · charakter), zdjęcie po prawej (~38%).
 - Pola formularzy: etykieta WERSALIKAMI nad polem, linia pod polem, bez ramki.
 - Zakładki: aktywna pogrubiona i podkreślona kreską 2 px w kolorze szałwii.
 - Po najechaniu karta lekko się unosi (cień `--shadow-card-hover`, przesunięcie 2 px).
+- Na okładce karty, w prawym dolnym rogu: okrągła strzałka (tło białe, krycie 75%), skierowana ↗;
+  po najechaniu lub z fokusem obraca się do →. Widoczna zawsze – sygnał, że karta jest klikalna.
 - Mobile: jedna kolumna, zakładki przewijane w poziomie (z „Archiwum”), kafel „Najbliższa podróż” nad listą.
 
 ## Dostępność – WCAG 2.0, poziom AA
@@ -205,7 +207,11 @@ Elementy interaktywne mają `data-testid`, np. `trip-card`, `status-tab-planned`
 `input-trip-end`, `select-trip-type`, `select-trip-character`, `btn-save-trip`, `btn-cancel-trip`,
 `trip-form-error`, `trip-form-loading`, `trip-form-load-error`, `trip-form-retry`,
 `error-{pole}` przy polu formularza podróży (np. `error-name`, `error-destination-city`, `error-end-date`,
-`error-start-date`), `trip-cover-photo` (zdjęcie na karcie podróży).
+`error-start-date`), `trip-cover-photo` (zdjęcie na karcie podróży),
+`trip-details`, `trip-details-loading`, `trip-details-error`, `trip-details-retry`, `trip-details-title`, `link-back`,
+`btn-status-{status}` (np. `btn-status-in-progress`, `btn-status-planned`), `status-error`,
+`trip-readonly-notice`, `trip-budget`, `section-panel`, `section-tab-{zakładka}` (`przeglad`, `plan`, `loty`,
+`transport`, `posilki`, `noclegi`, `wydatki`, `chce-odwiedzic`, `pakowanie`, `pamietnik`, `kosztorys`).
 
 ## Do dopilnowania
 

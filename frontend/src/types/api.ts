@@ -15,6 +15,30 @@ export interface DictionaryEntry {
   name: string;
 }
 
+/** Wartość ze słownika z polską etykietą, np. {value: "foreign", label: "zagraniczna"} */
+export interface LabeledValue<T extends string = string> {
+  value: T;
+  label: string;
+}
+
+/** GET /api/dictionaries (pola używane przez frontend) */
+export interface Dictionaries {
+  trip_characters: DictionaryEntry[];
+  trip_types: LabeledValue<TripType>[];
+}
+
+/** Dane formularza podróży: POST /api/trips, PUT /api/trips/{id} */
+export interface TripInput {
+  name: string;
+  destination_city: string;
+  destination_country: string;
+  start_date: string;
+  end_date: string;
+  trip_type: TripType;
+  character_id: number;
+  planned_budget: number | null;
+}
+
 export interface Trip {
   id: number;
   name: string;
@@ -45,6 +69,19 @@ export interface Countdown {
 export interface Dashboard {
   trips: Record<TripStatus, Trip[]>;
   countdown: Countdown | null;
+}
+
+/** Zdjęcie podróży: GET /api/trips/{id}/photos */
+export interface Photo {
+  id: number;
+  trip_id: number;
+  original_filename: string;
+  content_type: string;
+  size_bytes: number;
+  day: string;
+  caption: string | null;
+  uploaded_at: string;
+  file_url: string; // wymaga X-User-Id → api.getBlob
 }
 
 export interface WeatherCity {

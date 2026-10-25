@@ -200,7 +200,12 @@ Elementy interaktywne mają `data-testid`, np. `trip-card`, `status-tab-planned`
 `error-password`, `weather-loading`, `weather-city-name`, `btn-weather-search`, `weather-search-error`,
 `weather-city-results`, `weather-city-option-{n}` (n = 0, 1, 2… w kolejności wyników),
 `rates-loading`, `rates-error`, `rates-retry`, `rates-list`, `rate-{KOD}` (np. `rate-EUR`, przycisk wyboru waluty z `aria-pressed`), `rates-date`,
-`convert-amount-error`, `convert-error`.
+`convert-amount-error`, `convert-error`,
+`trip-form`, `input-trip-name`, `input-trip-city`, `input-trip-country`, `input-trip-budget`, `input-trip-start`,
+`input-trip-end`, `select-trip-type`, `select-trip-character`, `btn-save-trip`, `btn-cancel-trip`,
+`trip-form-error`, `trip-form-loading`, `trip-form-load-error`, `trip-form-retry`,
+`error-{pole}` przy polu formularza podróży (np. `error-name`, `error-destination-city`, `error-end-date`,
+`error-start-date`), `trip-cover-photo` (zdjęcie na karcie podróży).
 
 ## Do dopilnowania
 

@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
+import { useNavigate } from "react-router";
 import type { Dashboard, TripStatus } from "../../types/api";
 import { api, ApiError } from "../../api/client";
 import TripCard from "../../components/TripCard/TripCard";
@@ -64,6 +65,7 @@ export default function TripsPage() {
       ? load.data
       : { trips: { planned: [], in_progress: [], completed: [], archived: [] }, countdown: null };
 
+  const navigate = useNavigate();
   const [active, setActive] = useState<TripStatus>("planned");
   const [query, setQuery] = useState("");
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -108,7 +110,12 @@ export default function TripsPage() {
               data-testid="input-search"
             />
           </div>
-          <button type="button" className={styles.primary} data-testid="btn-new-trip">
+          <button
+            type="button"
+            className={styles.primary}
+            onClick={() => navigate("/podroze/nowa")}
+            data-testid="btn-new-trip"
+          >
             + Nowa podróż
           </button>
         </div>

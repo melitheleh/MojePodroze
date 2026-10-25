@@ -20,16 +20,25 @@ export function clearUserId(): void {
   localStorage.removeItem(USER_ID_KEY);
 }
 
-/** Błąd zwrócony przez API: {"detail": "komunikat", "code": "STAŁY_KOD"} */
+/** Błąd pola z odpowiedzi 422 VALIDATION_ERROR */
+export interface FieldError {
+  field: string;
+  message: string;
+  type: string;
+}
+
+/** Błąd zwrócony przez API: {"detail": "komunikat", "code": "STAŁY_KOD", "errors"?: [...]} */
 export class ApiError extends Error {
   status: number;
   code: string;
+  errors: FieldError[];
 
-  constructor(status: number, code: string, message: string) {
+  constructor(status: number, code: string, message: string, errors: FieldError[] = []) {
     super(message);
     this.name = "ApiError";
     this.status = status;
     this.code = code;
+    this.errors = errors;
   }
 }
 
@@ -37,14 +46,16 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   const headers: Record<string, string> = { Accept: "application/json" };
   const userId = getUserId();
   if (userId) headers["X-User-Id"] = userId;
-  if (body !== undefined) headers["Content-Type"] = "application/json";
+  // FormData (pliki) wysyłamy bez Content-Type – przeglądarka sama doda granicę multipart
+  const isForm = body instanceof FormData;
+  if (body !== undefined && !isForm) headers["Content-Type"] = "application/json";
 
   let response: Response;
   try {
     response = await fetch(`/api${path}`, {
       method,
       headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
+      body: body === undefined ? undefined : isForm ? body : JSON.stringify(body),
     });
   } catch {
     throw new ApiError(0, "NETWORK_ERROR", BACKEND_DOWN);
@@ -70,9 +81,23 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
       response.status,
       data?.code ?? "UNKNOWN_ERROR",
       data?.detail ?? `Serwer zwrócił błąd ${response.status}.`,
+      Array.isArray(data?.errors) ? data.errors : [],
     );
   }
   return data as T;
+}
+
+/**
+ * Plik zdjęcia (np. `file_url` z API: "/api/trips/1/photos/2/file") jako obiekt Blob.
+ * Wymaga nagłówka X-User-Id, dlatego nie da się go wstawić wprost do <img src>.
+ */
+async function getBlob(url: string): Promise<Blob> {
+  const headers: Record<string, string> = {};
+  const userId = getUserId();
+  if (userId) headers["X-User-Id"] = userId;
+  const response = await fetch(url, { headers });
+  if (!response.ok) throw new ApiError(response.status, "FILE_ERROR", "Nie udało się pobrać zdjęcia.");
+  return response.blob();
 }
 
 export const api = {
@@ -80,4 +105,7 @@ export const api = {
   post: <T>(path: string, body?: unknown) => request<T>("POST", path, body),
   put: <T>(path: string, body?: unknown) => request<T>("PUT", path, body),
   delete: <T>(path: string) => request<T>("DELETE", path),
+  /** multipart/form-data, np. wgranie zdjęcia */
+  upload: <T>(path: string, form: FormData) => request<T>("POST", path, form),
+  getBlob,
 };

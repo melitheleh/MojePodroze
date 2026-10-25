@@ -2,13 +2,10 @@ import { Link } from "react-router";
 import type { Trip } from "../../types/api";
 import { capitalize, formatDate } from "../../utils/format";
 import StatusLabel from "../StatusLabel/StatusLabel";
+import TripCover from "./TripCover";
 import styles from "./TripCard.module.css";
 
-const PLACEHOLDERS = 5;
-
 export default function TripCard({ trip }: { trip: Trip }) {
-  const placeholder = `var(--placeholder-${(trip.id % PLACEHOLDERS) + 1})`;
-
   return (
     <Link to={`/podroze/${trip.id}`} className={styles.card} data-testid="trip-card">
       <div className={styles.body}>
@@ -24,8 +21,7 @@ export default function TripCard({ trip }: { trip: Trip }) {
           {trip.character.name}
         </p>
       </div>
-      {/* Miejsce na zdjęcie okładkowe – na razie kolor zastępczy (dekoracja, bez opisu) */}
-      <div className={styles.cover} style={{ background: placeholder }} aria-hidden="true" />
+      <TripCover tripId={trip.id} />
     </Link>
   );
 }

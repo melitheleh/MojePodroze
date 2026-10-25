@@ -7,7 +7,7 @@ w trakcie wyjazdu. Projekt zaliczeniowy z przedmiotu „Testowanie aplikacji web
 |---|---|---|
 | Backend (API, logika, baza) + testy jednostkowe | **gotowy – etap 1** | Python 3.13, FastAPI, SQLAlchemy 2, Alembic, SQLite, pytest |
 | Testy integracyjne backendu | późniejszy etap (faza 2) | pytest + TestClient, tymczasowa baza SQLite |
-| Frontend (GUI) | do zrobienia (faza 3) | React + Vite, React Router, CSS Modules + tokeny CSS; styl „Trouvaille” ([docs/design](docs/design/README.md)), WCAG 2.0 AA |
+| Frontend (GUI) | w budowie (faza 3) | React + Vite + TypeScript, React Router, CSS Modules + tokeny CSS; styl „Trouvaille” ([docs/design](docs/design/README.md)), WCAG 2.0 AA |
 | Testy E2E | do zrobienia (faza 4) | Playwright (Python) |
 | Jakość kodu | skonfigurowane | Ruff, **SonarQube (lokalnie, Docker)**, GitHub Actions |
 
@@ -132,6 +132,27 @@ Zmienne środowiskowe z prefiksem `MP_` (albo plik `backend/.env`, wzór w `back
 | `MP_AUTO_MIGRATE` | `true` | migracje przy starcie aplikacji |
 | `MP_CORS_ORIGINS` | `["http://localhost:5173", "http://127.0.0.1:5173"]` | adresy frontendu (Vite) |
 | `MP_EXTERNAL_API_TIMEOUT_SECONDS` | `5` | timeout zapytań do Open-Meteo i NBP |
+
+---
+
+## Szybki start (frontend)
+
+Wymagany Node.js (z npm). Najpierw uruchom backend (`make run`), potem w drugim terminalu:
+
+```bash
+cd frontend
+npm install          # biblioteki (jednorazowo i po zmianie package.json)
+npm run dev          # http://localhost:5173
+npm run lint         # ESLint
+npx tsc -b           # sprawdzenie typów TypeScript
+```
+
+Zapytania na `/api/...` serwer Vite przekazuje do backendu na `http://127.0.0.1:8000`
+(proxy w `frontend/vite.config.ts`).
+
+> Ekranu logowania jeszcze nie ma. Do tego czasu ustaw id użytkownika w konsoli przeglądarki
+> (F12 → Console): `localStorage.setItem("userId", "1")` i odśwież stronę. Użytkownika
+> o tym id załóż wcześniej w Swaggerze (`POST /api/auth/register`).
 
 ---
 

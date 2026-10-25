@@ -32,6 +32,10 @@ frontend/src/
 
 ```css
 :root {
+  /* fonty */
+  --font-body: "Raleway", system-ui, sans-serif;
+  --font-logo: "Yellowtail", cursive;
+
   /* tło i powierzchnie */
   --color-bg: #ffffff;
   --color-surface: #ffffff;              /* karty i widżety (odcina je cień) */
@@ -50,11 +54,17 @@ frontend/src/
   --color-field-line: #7d8882;           /* linia pod polem formularza (3,7 : 1) */
   --color-divider: rgba(39, 48, 44, 0.1);/* linie podziału, nagłówek */
 
-  /* statusy podróży (kreska pod etykietą, zawsze z napisem obok) */
-  --status-plan: #3b6df5;                /* W PLANIE */
-  --status-in-progress: #f1b647;         /* W TRAKCIE, „Najbliższa podróż”, „Pogoda” w trybie ciemnym */
-  --status-done: #17a34a;                /* ZREALIZOWANA, „Kursy NBP” */
-  --status-archive: #8a8a94;             /* ARCHIWUM */
+  /* statusy podróży (kreska pod etykietą, zawsze z napisem obok);
+     nazwa = wartość statusu z API, podkreślnik zamieniony na myślnik */
+  --status-planned: #3b6df5;             /* W PLANIE */
+  --status-in-progress: #f1b647;         /* W TRAKCIE */
+  --status-completed: #17a34a;           /* ZREALIZOWANA */
+  --status-archived: #8a8a94;            /* ARCHIWUM */
+
+  /* kreska pod tytułem widżetu */
+  --widget-next-trip: #f1b647;           /* „Najbliższa podróż” */
+  --widget-weather: #3b6df5;             /* „Pogoda” */
+  --widget-rates: #17a34a;               /* „Kursy NBP” */
 
   /* komunikaty */
   --color-warning-bg: #fef3c6;
@@ -78,6 +88,10 @@ frontend/src/
 
   /* fokus */
   --focus-ring: #5f7a6c;
+
+  /* szerokość strony i marginesy boczne (na telefonie, do 640 px: 16px) */
+  --page-width: 1280px;
+  --page-padding: 32px;
 }
 
 [data-theme="dark"] {
@@ -89,9 +103,11 @@ frontend/src/
   --color-field-line: #7a8680;
   --color-divider: rgba(255, 255, 255, 0.08);
   --color-btn-secondary-border: #9fb8a6;
-  --status-plan: #7b9bf5;                /* jaśniejszy niebieski na ciemnym tle */
+  --status-planned: #7b9bf5;             /* jaśniejszy niebieski na ciemnym tle */
+  --widget-weather: #7b9bf5;
   --focus-ring: #9fb8a6;
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.25);
+  --shadow-card-hover: 0 2px 4px rgba(0, 0, 0, 0.35), 0 14px 32px rgba(0, 0, 0, 0.35);
 
   /* przygaszony róż – tylko wyróżnienie aktywnej opcji / propozycji */
   --color-highlight-bg: #3a2a33;
@@ -167,10 +183,11 @@ Zasady przy kodowaniu:
 
 ## Testy (Playwright)
 
-Elementy interaktywne mają `data-testid`, np. `trip-card`, `status-tab-plan`, `status-tab-progress`,
-`status-tab-done`, `status-tab-archive`, `btn-new-trip`, `input-search`, `input-weather-city`,
+Elementy interaktywne mają `data-testid`, np. `trip-card`, `status-tab-planned`, `status-tab-in-progress`,
+`status-tab-completed`, `status-tab-archived`, `btn-new-trip`, `input-search`, `input-weather-city`,
 `input-eur-amount`, `eur-result`, `widget-next-trip`, `widget-weather`, `widget-nbp`,
-`weather-error`, `weather-retry`, `theme-light`, `theme-dark`.
+`weather-error`, `weather-retry`, `theme-light`, `theme-dark`, `nav-trips`, `nav-stats`, `btn-logout`,
+`trip-status`, `countdown`, `weather-current`, `trips-loading`, `trips-error`, `trips-retry`, `trips-empty`.
 
 ## Do dopilnowania
 

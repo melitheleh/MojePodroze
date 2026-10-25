@@ -1,0 +1,77 @@
+/* Tokeny stylu „Trouvaille” – źródło: docs/design/README.md */
+:root {
+  --font-body: "Raleway", system-ui, sans-serif;
+  --font-logo: "Yellowtail", cursive;
+
+  --color-bg: #ffffff;
+  --color-surface: #ffffff;
+  --color-brand-panel: #4e5d56;
+
+  --color-text: #27302c;
+  --color-text-muted: #5f6b65;
+  --color-text-on-accent: #ffffff;
+
+  --color-accent: #5f7a6c;
+  --color-btn-secondary-border: #5f7a6c;
+
+  --color-field-line: #7d8882;
+  --color-divider: rgba(39, 48, 44, 0.1);
+
+  --status-planned: #3b6df5;
+  --status-in-progress: #f1b647;
+  --status-completed: #17a34a;
+  --status-archived: #8a8a94;
+
+  --widget-next-trip: #f1b647;
+  --widget-weather: #3b6df5;
+  --widget-rates: #17a34a;
+
+  --color-warning-bg: #fef3c6;
+  --color-warning-bar: #d97605;
+  --color-error-bg: #fee2e1;
+  --color-error-text: #942827;
+
+  --placeholder-1: #c8a178;
+  --placeholder-2: #7f9ab7;
+  --placeholder-3: #d7a8a0;
+  --placeholder-4: #9fb8a6;
+  --placeholder-5: #b8b0d6;
+
+  --radius-card: 16px;
+  --radius-button: 12px;
+  --radius-small: 10px;
+  --shadow-card: 0 1px 3px rgba(39, 48, 44, 0.05), 0 8px 24px rgba(39, 48, 44, 0.07);
+  --shadow-card-hover: 0 2px 4px rgba(39, 48, 44, 0.05), 0 14px 32px rgba(39, 48, 44, 0.1);
+
+  --focus-ring: #5f7a6c;
+
+  --page-width: 1280px;
+  --page-padding: 32px;
+}
+
+[data-theme="dark"] {
+  --color-bg: #18201c;
+  --color-surface: #212b26;
+  --color-text: #e8ece9;
+  --color-text-muted: #a7b3ac;
+  --color-text-soft: #c9d1cc;
+  --color-field-line: #7a8680;
+  --color-divider: rgba(255, 255, 255, 0.08);
+  --color-btn-secondary-border: #9fb8a6;
+  --status-planned: #7b9bf5;
+  --widget-weather: #7b9bf5;
+  --focus-ring: #9fb8a6;
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.25);
+  --shadow-card-hover: 0 2px 4px rgba(0, 0, 0, 0.35), 0 14px 32px rgba(0, 0, 0, 0.35);
+
+  --color-highlight-bg: #3a2a33;
+  --color-highlight-border: rgba(242, 201, 220, 0.35);
+  --color-highlight-text: #f6d6e5;
+  --color-suggestion-bg: rgba(216, 167, 191, 0.1);
+}
+
+@media (max-width: 640px) {
+  :root {
+    --page-padding: 16px;
+  }
+}

@@ -1,0 +1,188 @@
+.page {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 52px;
+}
+
+.content {
+  flex: 999 1 560px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.aside {
+  flex: 1 1 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* Pasek: wyszukiwarka + przycisk */
+.toolbar {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 22px;
+}
+
+.search {
+  flex: 1 1 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Etykieta pola WERSALIKAMI nad polem */
+.label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+/* Pole: tylko linia pod spodem */
+.field {
+  width: 100%;
+  min-width: 0;
+  height: 40px;
+  padding: 0 2px;
+  border: 0;
+  border-bottom: 1px solid var(--color-field-line);
+  background: transparent;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.primary {
+  height: 46px;
+  padding: 0 24px;
+  border: 0;
+  border-radius: var(--radius-button);
+  background: var(--color-accent);
+  color: var(--color-text-on-accent);
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.primary:hover {
+  opacity: 0.9;
+}
+
+/* Zakładki statusów */
+.tabs {
+  display: flex;
+  gap: 26px;
+  overflow-x: auto;
+}
+
+.tab {
+  flex: 0 0 auto;
+  height: 40px;
+  padding: 0 0 4px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.tab:hover {
+  color: var(--color-text);
+}
+
+.tabActive {
+  color: var(--color-text);
+  font-weight: 600;
+  border-bottom-color: var(--color-accent);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.empty {
+  padding: 32px;
+  text-align: center;
+  border-radius: var(--radius-card);
+  border: 1px dashed var(--color-field-line);
+  color: var(--color-text-muted);
+}
+
+/* Widżety */
+.countdown {
+  font-size: 28px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.muted {
+  color: var(--color-text-muted);
+}
+
+.weather {
+  margin-top: 6px;
+}
+
+.temperature {
+  font-size: 34px;
+  font-weight: 700;
+}
+
+.rates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 24px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 18px;
+}
+
+.rates abbr {
+  text-decoration: none;
+}
+
+.converter {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.result {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Telefon: jedna kolumna, „Najbliższa podróż” nad listą (jak w makiecie) */
+@media (max-width: 880px) {
+  .page {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 22px;
+  }
+
+  .content,
+  .aside {
+    flex: none;
+    display: contents;
+  }
+
+  /* elementy z .content i .aside stają się bezpośrednio częścią kolumny – nie mogą jej rozpychać */
+  .content > *,
+  .aside > * {
+    min-width: 0;
+  }
+
+  .nextTrip {
+    order: -1;
+  }
+}

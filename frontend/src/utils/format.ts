@@ -1,0 +1,27 @@
+/** "2026-11-12" → "12.11.2026" */
+export function formatDate(iso: string): string {
+  const [year, month, day] = iso.split("-");
+  return `${day}.${month}.${year}`;
+}
+
+/** Kwota w złotych, np. 427 → "427,00 zł" */
+export function formatPln(value: number): string {
+  return value.toLocaleString("pl-PL", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " zł";
+}
+
+/** Kurs waluty, np. 4.27 → "4,27" */
+export function formatRate(value: number): string {
+  return value.toLocaleString("pl-PL", { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+}
+
+/** Tekst odliczania: "Za 25 dni: Rzym", "Jutro: Rzym", "Dziś: Rzym" */
+export function countdownText(daysLeft: number, city: string): string {
+  if (daysLeft <= 0) return `Dziś: ${city}`;
+  if (daysLeft === 1) return `Jutro: ${city}`;
+  return `Za ${daysLeft} dni: ${city}`;
+}
+
+/** Wielka litera na początku: "w planie" → "W planie" */
+export function capitalize(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}

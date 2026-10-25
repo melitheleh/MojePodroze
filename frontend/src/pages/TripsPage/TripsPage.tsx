@@ -1,0 +1,129 @@
+import { useId, useRef, useState } from "react";
+import type { KeyboardEvent } from "react";
+import type { TripStatus } from "../../types/api";
+import { mockDashboard } from "../../data/mockDashboard";
+import TripCard from "../../components/TripCard/TripCard";
+import NextTripWidget from "./NextTripWidget";
+import WeatherWidget from "./WeatherWidget";
+import RatesWidget from "./RatesWidget";
+import styles from "./TripsPage.module.css";
+
+const TABS: { status: TripStatus; label: string }[] = [
+  { status: "planned", label: "W planie" },
+  { status: "in_progress", label: "W trakcie" },
+  { status: "completed", label: "Zrealizowane" },
+  { status: "archived", label: "Archiwum" },
+];
+
+const EMPTY_TEXT: Record<TripStatus, string> = {
+  planned: "Nie masz zaplanowanych podróży. Dodaj pierwszą przyciskiem „+ Nowa podróż”.",
+  in_progress: "Żadna podróż nie trwa w tej chwili.",
+  completed: "Nie masz jeszcze zrealizowanych podróży.",
+  archived: "Archiwum jest puste.",
+};
+
+export default function TripsPage() {
+  // TODO: zamienić na dane z GET /api/dashboard
+  const dashboard = mockDashboard;
+
+  const [active, setActive] = useState<TripStatus>("planned");
+  const [query, setQuery] = useState("");
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const idPrefix = useId();
+
+  const q = query.trim().toLowerCase();
+  const trips = dashboard.trips[active].filter(
+    (t) => !q || t.name.toLowerCase().includes(q) || t.destination_city.toLowerCase().includes(q),
+  );
+
+  // Strzałki w lewo/prawo przełączają zakładki (wzorzec WAI-ARIA „Tabs”)
+  function onTabKeyDown(event: KeyboardEvent<HTMLButtonElement>, index: number) {
+    let next = index;
+    if (event.key === "ArrowRight") next = (index + 1) % TABS.length;
+    else if (event.key === "ArrowLeft") next = (index - 1 + TABS.length) % TABS.length;
+    else if (event.key === "Home") next = 0;
+    else if (event.key === "End") next = TABS.length - 1;
+    else return;
+    event.preventDefault();
+    setActive(TABS[next].status);
+    tabRefs.current[next]?.focus();
+  }
+
+  return (
+    <div className={styles.page}>
+      <section className={styles.content} aria-labelledby={`${idPrefix}-heading`}>
+        <h1 id={`${idPrefix}-heading`} className="visually-hidden">
+          Moje podróże
+        </h1>
+
+        <div className={styles.toolbar}>
+          <div className={styles.search}>
+            <label htmlFor={`${idPrefix}-search`} className={styles.label}>
+              Szukaj podróży
+            </label>
+            <input
+              id={`${idPrefix}-search`}
+              type="search"
+              className={styles.field}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              data-testid="input-search"
+            />
+          </div>
+          <button type="button" className={styles.primary} data-testid="btn-new-trip">
+            + Nowa podróż
+          </button>
+        </div>
+
+        <div role="tablist" aria-label="Status podróży" className={styles.tabs}>
+          {TABS.map((tab, index) => {
+            const selected = tab.status === active;
+            return (
+              <button
+                key={tab.status}
+                ref={(el) => {
+                  tabRefs.current[index] = el;
+                }}
+                type="button"
+                role="tab"
+                id={`${idPrefix}-tab-${tab.status}`}
+                aria-selected={selected}
+                aria-controls={`${idPrefix}-panel`}
+                tabIndex={selected ? 0 : -1}
+                className={selected ? `${styles.tab} ${styles.tabActive}` : styles.tab}
+                onClick={() => setActive(tab.status)}
+                onKeyDown={(e) => onTabKeyDown(e, index)}
+                data-testid={`status-tab-${tab.status}`}
+              >
+                {tab.label} {dashboard.trips[tab.status].length}
+              </button>
+            );
+          })}
+        </div>
+
+        <div
+          role="tabpanel"
+          id={`${idPrefix}-panel`}
+          aria-labelledby={`${idPrefix}-tab-${active}`}
+          className={styles.list}
+        >
+          {trips.length > 0 ? (
+            trips.map((trip) => <TripCard key={trip.id} trip={trip} />)
+          ) : (
+            <p className={styles.empty} data-testid="trips-empty">
+              {q ? `Brak podróży pasujących do „${query.trim()}”.` : EMPTY_TEXT[active]}
+            </p>
+          )}
+        </div>
+      </section>
+
+      <aside className={styles.aside} aria-label="Widżety">
+        <div className={styles.nextTrip}>
+          <NextTripWidget countdown={dashboard.countdown} />
+        </div>
+        <WeatherWidget />
+        <RatesWidget />
+      </aside>
+    </div>
+  );
+}

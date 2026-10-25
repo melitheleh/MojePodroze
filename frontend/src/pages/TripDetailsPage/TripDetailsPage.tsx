@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
-import { Link, useParams, useSearchParams } from "react-router";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 import type { Section, Trip, TripStatus } from "../../types/api";
 import { api, ApiError } from "../../api/client";
 import { capitalize, formatDate, formatPln } from "../../utils/format";
@@ -61,6 +61,7 @@ export default function TripDetailsPage() {
   const [reloadKey, setReloadKey] = useState(0);
   const [statusError, setStatusError] = useState<string | null>(null);
   const [changing, setChanging] = useState(false);
+  const navigate = useNavigate();
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const idPrefix = useId();
 
@@ -149,6 +150,21 @@ export default function TripDetailsPage() {
     tabRefs.current[next]?.focus();
   }
 
+  // Usunięcie podróży ze wszystkim (pozycje, plan, zdjęcia) – nieodwracalne, więc z potwierdzeniem
+  async function deleteTrip() {
+    if (!window.confirm(`Na pewno usunąć podróż „${trip.name}”? Usunięte zostaną też wszystkie jej wpisy i zdjęcia. Tego nie da się cofnąć.`))
+      return;
+    setChanging(true);
+    setStatusError(null);
+    try {
+      await api.delete(`/trips/${trip.id}`);
+      navigate("/podroze", { replace: true });
+    } catch (error) {
+      setStatusError(error instanceof ApiError ? error.message : "Nie udało się usunąć podróży.");
+      setChanging(false);
+    }
+  }
+
   async function changeStatus(status: TripStatus) {
     setChanging(true);
     setStatusError(null);
@@ -195,6 +211,23 @@ export default function TripDetailsPage() {
             <span className="visually-hidden">, </span>
             {trip.character.name}
           </p>
+          {/* Archiwum jest tylko do odczytu – bez edycji i usuwania */}
+          {!trip.is_read_only && (
+            <div className={styles.tripActions}>
+              <Link to={`/podroze/${trip.id}/edycja`} className={styles.smallButton} data-testid="btn-edit-trip">
+                Edytuj
+              </Link>
+              <button
+                type="button"
+                className={styles.dangerButton}
+                onClick={deleteTrip}
+                disabled={changing}
+                data-testid="btn-delete-trip"
+              >
+                Usuń podróż
+              </button>
+            </div>
+          )}
         </div>
 
         {transitions.length > 0 && (

@@ -95,6 +95,53 @@
   color: var(--color-text-muted);
 }
 
+/* Edytuj / Usuń podróż – mniejsze przyciski pod danymi podróży */
+.tripActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.smallButton,
+.dangerButton {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: var(--radius-small);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.smallButton {
+  border: 1.5px solid var(--color-btn-secondary-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.smallButton:hover {
+  background: var(--color-divider);
+}
+
+/* Usuwanie: czerwony tekst i obrys (kontrast #942827 na białym 8,4 : 1), bez wypełnienia */
+.dangerButton {
+  border: 1.5px solid var(--color-error-text);
+  background: var(--color-surface);
+  color: var(--color-error-text);
+}
+
+.dangerButton:hover:not(:disabled) {
+  background: var(--color-error-bg);
+}
+
+.dangerButton:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
 .statusActions {
   display: flex;
   flex-wrap: wrap;

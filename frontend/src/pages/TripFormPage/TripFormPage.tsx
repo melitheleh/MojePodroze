@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
-import { useNavigate } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
 import type { Dictionaries, Trip, TripInput, TripType } from "../../types/api";
 import { api, ApiError } from "../../api/client";
 import { capitalize } from "../../utils/format";
+import PhotoUpload from "./PhotoUpload";
 import styles from "./TripFormPage.module.css";
 
 type FieldName =
@@ -31,7 +32,7 @@ interface FormValues {
 
 type DictState =
   | { status: "loading" }
-  | { status: "ready"; data: Dictionaries }
+  | { status: "ready"; data: Dictionaries; trip: Trip | null }
   | { status: "error"; message: string };
 
 // Budżet jak w backendzie: liczba > 0, najwyżej 2 miejsca po przecinku (przecinek albo kropka)
@@ -75,6 +76,20 @@ function toInput(values: FormValues): TripInput {
   };
 }
 
+/** Dane podróży z API → wartości pól formularza (tryb edycji) */
+function toValues(trip: Trip): FormValues {
+  return {
+    name: trip.name,
+    destination_city: trip.destination_city,
+    destination_country: trip.destination_country,
+    start_date: trip.start_date,
+    end_date: trip.end_date,
+    planned_budget: trip.planned_budget === null ? "" : String(trip.planned_budget).replace(".", ","),
+    trip_type: trip.trip_type,
+    character_id: String(trip.character.id),
+  };
+}
+
 interface FieldProps {
   id: FieldName;
   label: string;
@@ -99,9 +114,13 @@ function Field({ id, label, error, children }: FieldProps) {
   );
 }
 
-// Formularz nowej podróży (makieta 8): POST /api/trips, listy wyboru z GET /api/dictionaries.
+// Formularz podróży (makieta 8): nowa – POST /api/trips, edycja (/podroze/:id/edycja) – PUT /api/trips/{id}
+// z dodawaniem zdjęcia. Listy wyboru z GET /api/dictionaries.
 export default function TripFormPage() {
   const navigate = useNavigate();
+  const { tripId } = useParams();
+  const editing = tripId !== undefined;
+  const backTo = editing ? `/podroze/${tripId}` : "/podroze";
   const [dict, setDict] = useState<DictState>({ status: "loading" });
   const [reloadKey, setReloadKey] = useState(0);
   const [values, setValues] = useState<FormValues>({
@@ -120,11 +139,17 @@ export default function TripFormPage() {
 
   useEffect(() => {
     let cancelled = false;
-    api
-      .get<Dictionaries>("/dictionaries")
-      .then((data) => {
+    Promise.all([
+      api.get<Dictionaries>("/dictionaries"),
+      tripId === undefined ? Promise.resolve(null) : api.get<Trip>(`/trips/${tripId}`),
+    ])
+      .then(([data, trip]) => {
         if (cancelled) return;
-        setDict({ status: "ready", data });
+        setDict({ status: "ready", data, trip });
+        if (trip) {
+          setValues(toValues(trip));
+          return;
+        }
         // Domyślny charakter jak w makiecie: „Miasto”
         const city = data.trip_characters.find((c) => c.code === "city") ?? data.trip_characters[0];
         if (city) setValues((v) => (v.character_id === "" ? { ...v, character_id: String(city.id) } : v));
@@ -133,13 +158,18 @@ export default function TripFormPage() {
         if (!cancelled)
           setDict({
             status: "error",
-            message: error instanceof ApiError ? error.message : "Nie udało się wczytać list wyboru.",
+            message:
+              error instanceof ApiError && error.status === 404
+                ? "Nie znaleziono podróży."
+                : error instanceof ApiError
+                  ? error.message
+                  : "Nie udało się wczytać formularza.",
           });
       });
     return () => {
       cancelled = true;
     };
-  }, [reloadKey]);
+  }, [tripId, reloadKey]);
 
   function set<K extends keyof FormValues>(field: K, value: FormValues[K]) {
     setValues((v) => ({ ...v, [field]: value }));
@@ -168,13 +198,22 @@ export default function TripFormPage() {
 
     setSaving(true);
     try {
-      await api.post<Trip>("/trips", toInput(values));
-      navigate("/podroze");
+      if (editing) {
+        await api.put<Trip>(`/trips/${tripId}`, toInput(values));
+        navigate(backTo);
+      } else {
+        await api.post<Trip>("/trips", toInput(values));
+        navigate("/podroze");
+      }
     } catch (error) {
       if (error instanceof ApiError && error.errors.length > 0) {
         const serverErrors: FieldErrors = {};
         for (const e of error.errors) serverErrors[e.field as FieldName] = "Nieprawidłowa wartość.";
         setFieldErrors(serverErrors);
+      }
+      // Zmiana na krajową, gdy podróż ma loty (makieta 8) – błąd także przy polu „Typ”
+      if (error instanceof ApiError && error.code === "TRIP_TYPE_CHANGE_BLOCKED") {
+        setFieldErrors({ trip_type: error.message });
       }
       setFormError(error instanceof ApiError ? error.message : "Nie udało się zapisać podróży.");
       setSaving(false);
@@ -183,7 +222,7 @@ export default function TripFormPage() {
 
   return (
     <div className={styles.page}>
-      <h1 className={styles.title}>Nowa podróż</h1>
+      <h1 className={styles.title}>{editing ? "Edytuj podróż" : "Nowa podróż"}</h1>
 
       {dict.status === "loading" ? (
         <p className={styles.muted} role="status" data-testid="trip-form-loading">
@@ -204,111 +243,121 @@ export default function TripFormPage() {
             Spróbuj ponownie
           </button>
         </div>
+      ) : dict.trip?.is_read_only ? (
+        <div className={styles.formError} role="alert" data-testid="trip-form-readonly">
+          <p>Podróż jest w archiwum – nie można jej edytować. Aby coś zmienić, cofnij jej status.</p>
+          <Link to={backTo} className={styles.backLink}>
+            Wróć do podróży
+          </Link>
+        </div>
       ) : (
-        <form className={styles.form} onSubmit={onSubmit} noValidate data-testid="trip-form">
-          {formError && (
-            <p className={styles.formError} role="alert" data-testid="trip-form-error">
-              {formError}
-            </p>
-          )}
+        <>
+          <form className={styles.form} onSubmit={onSubmit} noValidate data-testid="trip-form">
+            {formError && (
+              <p className={styles.formError} role="alert" data-testid="trip-form-error">
+                {formError}
+              </p>
+            )}
 
-          <div className={styles.grid}>
-            <Field id="name" label="Nazwa" error={fieldErrors.name}>
-              <input
-                {...fieldProps("name", "input-trip-name")}
-                className={styles.field}
-                value={values.name}
-                onChange={(e) => set("name", e.target.value)}
-              />
-            </Field>
-            <Field id="destination_city" label="Miasto" error={fieldErrors.destination_city}>
-              <input
-                {...fieldProps("destination_city", "input-trip-city")}
-                className={styles.field}
-                value={values.destination_city}
-                onChange={(e) => set("destination_city", e.target.value)}
-              />
-            </Field>
-            <Field id="destination_country" label="Kraj" error={fieldErrors.destination_country}>
-              <input
-                {...fieldProps("destination_country", "input-trip-country")}
-                className={styles.field}
-                value={values.destination_country}
-                onChange={(e) => set("destination_country", e.target.value)}
-              />
-            </Field>
-            <Field id="planned_budget" label="Budżet (PLN, opcjonalnie)" error={fieldErrors.planned_budget}>
-              <input
-                {...fieldProps("planned_budget", "input-trip-budget")}
-                inputMode="decimal"
-                className={styles.field}
-                value={values.planned_budget}
-                onChange={(e) => set("planned_budget", e.target.value)}
-              />
-            </Field>
-            <Field id="start_date" label="Data od" error={fieldErrors.start_date}>
-              <input
-                {...fieldProps("start_date", "input-trip-start")}
-                type="date"
-                className={styles.field}
-                value={values.start_date}
-                onChange={(e) => set("start_date", e.target.value)}
-              />
-            </Field>
-            <Field id="end_date" label="Data do" error={fieldErrors.end_date}>
-              <input
-                {...fieldProps("end_date", "input-trip-end")}
-                type="date"
-                className={styles.field}
-                value={values.end_date}
-                min={values.start_date || undefined}
-                onChange={(e) => set("end_date", e.target.value)}
-              />
-            </Field>
-            <Field id="trip_type" label="Typ" error={fieldErrors.trip_type}>
-              <select
-                {...fieldProps("trip_type", "select-trip-type")}
-                className={styles.field}
-                value={values.trip_type}
-                onChange={(e) => set("trip_type", e.target.value as TripType)}
-              >
-                {dict.data.trip_types.map((t) => (
-                  <option key={t.value} value={t.value}>
-                    {capitalize(t.label)}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <Field id="character_id" label="Charakter" error={fieldErrors.character_id}>
-              <select
-                {...fieldProps("character_id", "select-trip-character")}
-                className={styles.field}
-                value={values.character_id}
-                onChange={(e) => set("character_id", e.target.value)}
-              >
-                {dict.data.trip_characters.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </Field>
-          </div>
+            <div className={styles.grid}>
+              <Field id="name" label="Nazwa" error={fieldErrors.name}>
+                <input
+                  {...fieldProps("name", "input-trip-name")}
+                  className={styles.field}
+                  value={values.name}
+                  onChange={(e) => set("name", e.target.value)}
+                />
+              </Field>
+              <Field id="destination_city" label="Miasto" error={fieldErrors.destination_city}>
+                <input
+                  {...fieldProps("destination_city", "input-trip-city")}
+                  className={styles.field}
+                  value={values.destination_city}
+                  onChange={(e) => set("destination_city", e.target.value)}
+                />
+              </Field>
+              <Field id="destination_country" label="Kraj" error={fieldErrors.destination_country}>
+                <input
+                  {...fieldProps("destination_country", "input-trip-country")}
+                  className={styles.field}
+                  value={values.destination_country}
+                  onChange={(e) => set("destination_country", e.target.value)}
+                />
+              </Field>
+              <Field id="planned_budget" label="Budżet (PLN, opcjonalnie)" error={fieldErrors.planned_budget}>
+                <input
+                  {...fieldProps("planned_budget", "input-trip-budget")}
+                  inputMode="decimal"
+                  className={styles.field}
+                  value={values.planned_budget}
+                  onChange={(e) => set("planned_budget", e.target.value)}
+                />
+              </Field>
+              <Field id="start_date" label="Data od" error={fieldErrors.start_date}>
+                <input
+                  {...fieldProps("start_date", "input-trip-start")}
+                  type="date"
+                  className={styles.field}
+                  value={values.start_date}
+                  onChange={(e) => set("start_date", e.target.value)}
+                />
+              </Field>
+              <Field id="end_date" label="Data do" error={fieldErrors.end_date}>
+                <input
+                  {...fieldProps("end_date", "input-trip-end")}
+                  type="date"
+                  className={styles.field}
+                  value={values.end_date}
+                  min={values.start_date || undefined}
+                  onChange={(e) => set("end_date", e.target.value)}
+                />
+              </Field>
+              <Field id="trip_type" label="Typ" error={fieldErrors.trip_type}>
+                <select
+                  {...fieldProps("trip_type", "select-trip-type")}
+                  className={styles.field}
+                  value={values.trip_type}
+                  onChange={(e) => set("trip_type", e.target.value as TripType)}
+                >
+                  {dict.data.trip_types.map((t) => (
+                    <option key={t.value} value={t.value}>
+                      {capitalize(t.label)}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Field id="character_id" label="Charakter" error={fieldErrors.character_id}>
+                <select
+                  {...fieldProps("character_id", "select-trip-character")}
+                  className={styles.field}
+                  value={values.character_id}
+                  onChange={(e) => set("character_id", e.target.value)}
+                >
+                  {dict.data.trip_characters.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+            </div>
 
-          <div className={styles.actions}>
-            <button
-              type="button"
-              className={styles.secondary}
-              onClick={() => navigate("/podroze")}
-              data-testid="btn-cancel-trip"
-            >
-              Anuluj
-            </button>
-            <button type="submit" className={styles.primary} disabled={saving} data-testid="btn-save-trip">
-              {saving ? "Zapisywanie…" : "Zapisz podróż"}
-            </button>
-          </div>
-        </form>
+            <div className={styles.actions}>
+              <button
+                type="button"
+                className={styles.secondary}
+                onClick={() => navigate(backTo)}
+                data-testid="btn-cancel-trip"
+              >
+                Anuluj
+              </button>
+              <button type="submit" className={styles.primary} disabled={saving} data-testid="btn-save-trip">
+                {saving ? "Zapisywanie…" : editing ? "Zapisz zmiany" : "Zapisz podróż"}
+              </button>
+            </div>
+          </form>
+          {dict.trip && <PhotoUpload tripId={dict.trip.id} day={dict.trip.start_date} />}
+        </>
       )}
     </div>
   );

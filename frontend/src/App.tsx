@@ -17,6 +17,7 @@ export default function App() {
           <Route path="podroze" element={<TripsPage />} />
           <Route path="podroze/nowa" element={<TripFormPage />} />
           <Route path="podroze/:tripId" element={<TripDetailsPage />} />
+          <Route path="podroze/:tripId/edycja" element={<TripFormPage />} />
           <Route path="statystyki" element={<StatsPage />} />
         </Route>
       </Route>

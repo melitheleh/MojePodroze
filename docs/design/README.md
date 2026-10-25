@@ -217,7 +217,11 @@ Elementy interaktywne mają `data-testid`, np. `trip-card`, `status-tab-planned`
 `trip-details`, `trip-details-loading`, `trip-details-error`, `trip-details-retry`, `trip-details-title`, `link-back`,
 `btn-status-{status}` (np. `btn-status-in-progress`, `btn-status-planned`), `status-error`,
 `trip-readonly-notice`, `trip-budget`, `section-panel`, `section-tab-{zakładka}` (`przeglad`, `plan`, `loty`,
-`transport`, `posilki`, `noclegi`, `wydatki`, `chce-odwiedzic`, `pakowanie`, `pamietnik`, `kosztorys`).
+`transport`, `posilki`, `noclegi`, `wydatki`, `chce-odwiedzic`, `pakowanie`, `pamietnik`, `kosztorys`),
+`btn-edit-trip`, `btn-delete-trip`, `trip-form-readonly`, `trip-photos`, `input-trip-photo`, `error-photo`,
+`trip-photo-previews`, `trip-photo-preview-{n}`, `btn-remove-photo-{n}` (n = 0, 1, 2…), `btn-upload-photo`,
+`btn-clear-photos`, `photo-uploaded`, `trip-photo-list`, `photo-{id}`, `btn-delete-photo-{id}`,
+`trip-photos-loading`, `trip-photos-error`, `trip-photos-empty`, `photo-delete-error`.
 
 ## Do dopilnowania
 

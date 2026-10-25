@@ -110,12 +110,30 @@
 
 /* Zakładki statusów */
 .tabs {
+  position: relative;
   display: flex;
   gap: 26px;
   overflow-x: auto;
+  /* Miejsce na poświatę fokusu – bez przesuwania zakładek względem reszty strony */
+  padding: 6px 12px 0;
+  margin: -6px -12px 0;
+}
+
+/* Kreska aktywnej zakładki – przesuwa się płynnie (useTabIndicator) */
+.tabIndicator {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background: var(--color-accent);
+  transition:
+    left 0.25s ease,
+    width 0.25s ease;
 }
 
 .tab {
+  position: relative;
+  isolation: isolate;
   flex: 0 0 auto;
   height: 40px;
   padding: 0 0 4px;
@@ -131,16 +149,43 @@
   color: var(--color-text);
 }
 
+/* Fokus zakładki: bez globalnej poświaty (przycinałby ją przewijany pasek zakładek).
+   Przezroczysty outline zostaje dla trybu wysokiego kontrastu. */
+.tab:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: none;
+  color: var(--color-text);
+}
+
+/* Fokus jako osobna warstwa: jasnozielone tło bez obwódki, szersze od napisu i nad kreską
+   aktywnej zakładki */
+.tab:focus-visible::before {
+  content: "";
+  position: absolute;
+  inset: 4px -8px 8px;
+  z-index: -1;
+  border-radius: var(--radius-small);
+  background: color-mix(in srgb, var(--focus-ring) 22%, transparent);
+}
+
 .tabActive {
   color: var(--color-text);
   font-weight: 600;
-  border-bottom-color: var(--color-accent);
 }
 
+/* Lista kart pojawia się płynnie po przełączeniu zakładki */
 .list {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  animation: panel-in 0.2s ease;
+}
+
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
 }
 
 .empty {

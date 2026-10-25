@@ -7,6 +7,7 @@ import TripCard from "../../components/TripCard/TripCard";
 import NextTripWidget from "./NextTripWidget";
 import WeatherWidget from "./WeatherWidget";
 import RatesWidget from "./RatesWidget";
+import { useTabIndicator } from "../../hooks/useTabIndicator";
 import styles from "./TripsPage.module.css";
 
 const TABS: { status: TripStatus; label: string }[] = [
@@ -70,6 +71,10 @@ export default function TripsPage() {
   const [query, setQuery] = useState("");
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const idPrefix = useId();
+  const indicatorRef = useTabIndicator(
+    tabRefs,
+    TABS.findIndex((t) => t.status === active),
+  );
 
   const q = query.trim().toLowerCase();
   const trips = dashboard.trips[active].filter(
@@ -132,6 +137,7 @@ export default function TripsPage() {
         </div>
 
         <div role="tablist" aria-label="Status podróży" className={styles.tabs}>
+          <span ref={indicatorRef} className={styles.tabIndicator} aria-hidden="true" />
           {TABS.map((tab, index) => {
             const selected = tab.status === active;
             return (
@@ -158,6 +164,7 @@ export default function TripsPage() {
         </div>
 
         <div
+          key={active}
           role="tabpanel"
           id={`${idPrefix}-panel`}
           aria-labelledby={`${idPrefix}-tab-${active}`}

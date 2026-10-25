@@ -6,6 +6,7 @@ import { api, ApiError } from "../../api/client";
 import { capitalize, formatDate, formatPln } from "../../utils/format";
 import StatusLabel from "../../components/StatusLabel/StatusLabel";
 import TripCover from "../../components/TripCard/TripCover";
+import { useTabIndicator } from "../../hooks/useTabIndicator";
 import styles from "./TripDetailsPage.module.css";
 
 interface Tab {
@@ -63,6 +64,16 @@ export default function TripDetailsPage() {
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const idPrefix = useId();
 
+  // Zakładki liczymy przed wczesnymi `return` (hooki muszą być wywoływane zawsze w tej samej kolejności)
+  const loadedTrip = load.status === "ready" ? load.trip : null;
+  const tabs = loadedTrip
+    ? TABS.filter((tab) => !tab.section || loadedTrip.available_sections.includes(tab.section))
+    : [];
+  const requestedTab = searchParams.get("zakladka");
+  const activeTab = tabs.find((t) => t.key === requestedTab) ?? tabs[0];
+  const activeIndex = activeTab ? tabs.indexOf(activeTab) : -1;
+  const indicatorRef = useTabIndicator(tabRefs, activeIndex);
+
   useEffect(() => {
     let cancelled = false;
     api
@@ -97,7 +108,7 @@ export default function TripDetailsPage() {
     return (
       <div className={styles.page}>
         <Link to="/podroze" className={styles.back} data-testid="link-back">
-          ← Moje podróże
+          <span className={styles.backArrow} aria-hidden="true">←</span> Moje podróże
         </Link>
         <div className={styles.error} role="alert" data-testid="trip-details-error">
           <p>{load.message}</p>
@@ -118,11 +129,7 @@ export default function TripDetailsPage() {
   }
 
   const trip = load.trip;
-  const tabs = TABS.filter((tab) => !tab.section || trip.available_sections.includes(tab.section));
-  const activeKey = tabs.some((t) => t.key === searchParams.get("zakladka"))
-    ? (searchParams.get("zakladka") as string)
-    : tabs[0].key;
-  const activeTab = tabs.find((t) => t.key === activeKey) ?? tabs[0];
+  const activeKey = activeTab.key;
   const currentIndex = STATUS_ORDER.indexOf(trip.status);
 
   function selectTab(key: string) {
@@ -163,7 +170,7 @@ export default function TripDetailsPage() {
   return (
     <div className={styles.page} data-testid="trip-details">
       <Link to="/podroze" className={styles.back} data-testid="link-back">
-        ← Moje podróże
+        <span className={styles.backArrow} aria-hidden="true">←</span> Moje podróże
       </Link>
 
       <figure className={styles.coverFigure}>
@@ -225,6 +232,7 @@ export default function TripDetailsPage() {
       )}
 
       <div role="tablist" aria-label="Sekcje podróży" className={styles.tabs}>
+        <span ref={indicatorRef} className={styles.tabIndicator} aria-hidden="true" />
         {tabs.map((tab, index) => {
           const selected = tab.key === activeKey;
           return (
@@ -251,6 +259,7 @@ export default function TripDetailsPage() {
       </div>
 
       <div
+        key={activeKey}
         role="tabpanel"
         id={`${idPrefix}-panel`}
         aria-labelledby={`${idPrefix}-tab-${activeKey}`}

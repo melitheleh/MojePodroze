@@ -45,6 +45,42 @@
   border-bottom-color: var(--color-accent);
 }
 
+/* Fokus w nagłówku jak w zakładkach: jasnozielone tło bez obwódki na osobnej warstwie, szersze od
+   napisu i nad kreską aktywnej pozycji (globalny fokus przylegałby do liter). */
+.logo,
+.navLink,
+.logout {
+  position: relative;
+  isolation: isolate;
+}
+
+.logo:focus-visible,
+.navLink:focus-visible,
+.logout:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: none;
+}
+
+/* Przy fokusie kreska aktywnej pozycji znika – zostaje samo tło (aktywność widać po pogrubieniu) */
+.navLink:focus-visible {
+  border-bottom-color: transparent;
+}
+
+.logo:focus-visible::before,
+.navLink:focus-visible::before,
+.logout:focus-visible::before {
+  content: "";
+  position: absolute;
+  inset: 0 -10px 4px;
+  z-index: -1;
+  border-radius: var(--radius-small);
+  background: color-mix(in srgb, var(--focus-ring) 22%, transparent);
+}
+
+.logo:focus-visible::before {
+  inset: -4px -10px;
+}
+
 .logout {
   margin-left: auto;
   padding: 6px 0;

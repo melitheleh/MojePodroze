@@ -138,7 +138,11 @@ Przycisk główny w obu trybach: tło `--color-accent` (#5f7a6c), biały tekst.
   karty) i kolumna widżetów (najbliższa podróż, pogoda, kursy NBP).
 - Karta podróży: tekst po lewej (status, tytuł, daty · typ · charakter), zdjęcie po prawej (~38%).
 - Pola formularzy: etykieta WERSALIKAMI nad polem, linia pod polem, bez ramki.
-- Zakładki: aktywna pogrubiona i podkreślona kreską 2 px w kolorze szałwii.
+- Zakładki: aktywna pogrubiona i podkreślona kreską 2 px w kolorze szałwii; kreska przesuwa się płynnie
+  pod nową zakładkę (`useTabIndicator`), a treść zakładki pojawia się z lekkim zanikaniem (0,2 s).
+- Zdjęcie okładki wyłania się płynnie z koloru zastępczego (0,35 s); strzałka „←” w „Moje podróże”
+  odsuwa się w lewo po najechaniu.
+- Animacje są krótkie (0,15–0,35 s) i wyłączane przy `prefers-reduced-motion` (global.css).
 - Po najechaniu karta lekko się unosi (cień `--shadow-card-hover`, przesunięcie 2 px).
 - Na okładce karty, w prawym dolnym rogu: okrągła strzałka (tło białe, krycie 75%), skierowana ↗;
   po najechaniu lub z fokusem obraca się do →. Widoczna zawsze – sygnał, że karta jest klikalna.
@@ -160,7 +164,9 @@ Kontrasty (sprawdzone, minimum dla tekstu 4,5 : 1):
 | tryb ciemny: aktywna opcja #f6d6e5 na #3a2a33 | 10,1 : 1 |
 | linia pola #7d8882 na bieli / #7a8680 na #18201c | 3,7 : 1 / 4,4 : 1 |
 
-Fokus (kryterium 2.4.7) – miękka poświata zamiast ramki; przycisk główny dodatkowo ciemnieje
+Fokus (kryterium 2.4.7) – przyciski, karty i linki: obwódka 1 px + miękka poświata; zakładki, menu
+w nagłówku i link „← Moje podróże”: jasnozielone tło bez obwódki (`--focus-ring` 22%), szersze od napisu
+i nad kreską aktywnej pozycji; przycisk główny dodatkowo ciemnieje
 (`--color-accent-hover`). Przezroczysty `outline` zostaje dla trybu wysokiego kontrastu Windows,
 w którym cienie są ukrywane:
 
@@ -170,7 +176,7 @@ button:focus-visible {
   outline: 2px solid transparent;
   border-radius: var(--radius-button);
   box-shadow:
-    0 0 0 3px color-mix(in srgb, var(--focus-ring) 45%, transparent),
+    0 0 0 1px var(--focus-ring),
     0 0 14px 4px color-mix(in srgb, var(--focus-ring) 60%, transparent);
 }
 input:focus,

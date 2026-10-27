@@ -183,6 +183,57 @@ export interface AlbumDay {
   photos: Photo[];
 }
 
+/** Suma jednej sekcji w kosztorysie */
+export interface SectionSummary {
+  section: Section;
+  label: string; // polska nazwa sekcji
+  total_cost: number;
+  items_count: number;
+  average_rating: number | null;
+  rated_items_count: number;
+}
+
+/** no_budget – brak budżetu, ok, warning – wydano ≥ 90%, exceeded – ponad budżet */
+export type BudgetAlertLevel = "no_budget" | "ok" | "warning" | "exceeded";
+
+export interface Budget {
+  planned_budget: number | null;
+  spent: number;
+  remaining: number | null;
+  overrun: number | null;
+  usage_percent: number | null;
+  alert_level: BudgetAlertLevel;
+}
+
+/** GET /api/trips/{id}/cost-summary */
+export interface CostSummary {
+  trip_id: number;
+  total_cost: number;
+  average_rating: number | null;
+  rated_items_count: number;
+  trip_days: number;
+  average_daily_cost: number;
+  sections: SectionSummary[];
+  budget: Budget;
+}
+
+export interface Recommendation {
+  category: "restaurant" | "accommodation" | "attraction";
+  name: string;
+  average_rating: number;
+  ratings_count: number;
+  trip_ids: number[];
+}
+
+/** GET /api/trips/{id}/recommendations – z wcześniejszych podróży do tego samego miasta */
+export interface Recommendations {
+  destination_city: string;
+  previous_trips: { id: number; name: string; start_date: string; end_date: string; status: TripStatus }[];
+  restaurants: Recommendation[];
+  places: Recommendation[];
+  pending_wishlist: { name: string; trip_ids: number[] }[];
+}
+
 export interface WeatherCity {
   name: string;
   country: string | null;

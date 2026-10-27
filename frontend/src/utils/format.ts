@@ -31,6 +31,11 @@ export function formatPln(value: number): string {
   return value.toLocaleString("pl-PL", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " zł";
 }
 
+/** Liczba z jednym miejscem po przecinku, np. 4.333 → "4,3", 89.64 → "89,6" */
+export function formatDecimal(value: number): string {
+  return value.toLocaleString("pl-PL", { minimumFractionDigits: 0, maximumFractionDigits: 1 });
+}
+
 /** Kurs waluty, np. 4.27 → "4,27" */
 export function formatRate(value: number): string {
   return value.toLocaleString("pl-PL", { minimumFractionDigits: 2, maximumFractionDigits: 4 });

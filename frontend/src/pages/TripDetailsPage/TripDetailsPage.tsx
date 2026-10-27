@@ -11,6 +11,7 @@ import { useTabIndicator } from "../../hooks/useTabIndicator";
 import { useConfirm } from "../../hooks/useConfirm";
 import ItemSection from "../../components/ItemSection/ItemSection";
 import ChecklistSection from "../../components/ChecklistSection/ChecklistSection";
+import CostSummaryPanel from "./CostSummaryPanel";
 import { DIARY, EXPENSES, FLIGHTS, MEALS, PACKING, PLACES, PLAN, TRANSPORTS, WISHLIST } from "./sections";
 import styles from "./TripDetailsPage.module.css";
 
@@ -361,6 +362,8 @@ export default function TripDetailsPage() {
           <ChecklistSection config={WISHLIST} tripId={trip.id} readOnly={trip.is_read_only} />
         ) : activeTab.key === "pakowanie" ? (
           <ChecklistSection config={PACKING} tripId={trip.id} readOnly={trip.is_read_only} />
+        ) : activeTab.key === "kosztorys" ? (
+          <CostSummaryPanel tripId={trip.id} readOnly={trip.is_read_only} />
         ) : activeTab.key === "pamietnik" ? (
           <ItemSection config={DIARY} {...sectionProps} />
         ) : activeTab.key === "loty" ? (

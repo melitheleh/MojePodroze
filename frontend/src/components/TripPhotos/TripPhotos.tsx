@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import type { Photo } from "../../types/api";
 import { api, ApiError } from "../../api/client";
+import { capitalize } from "../../utils/format";
+import { useConfirm } from "../../hooks/useConfirm";
 import styles from "./TripPhotos.module.css";
 
 /** Jedno zdjęcie: plik wymaga nagłówka X-User-Id, więc fetch → blob → URL.createObjectURL */
@@ -48,6 +50,7 @@ type LoadState =
 export default function TripPhotos({ tripId, refreshKey = 0, editable = false, onChange }: Props) {
   const [load, setLoad] = useState<LoadState>({ status: "loading" });
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const { confirm, confirmDialog } = useConfirm();
 
   useEffect(() => {
     let cancelled = false;
@@ -66,7 +69,12 @@ export default function TripPhotos({ tripId, refreshKey = 0, editable = false, o
   }, [tripId, refreshKey]);
 
   async function remove(photo: Photo, label: string) {
-    if (!window.confirm(`Usunąć ${label}? Tego nie da się cofnąć.`)) return;
+    const confirmed = await confirm({
+      title: "Usunąć zdjęcie?",
+      message: `${photo.caption ? `Zdjęcie „${photo.caption}”` : capitalize(label)} zostanie usunięte z podróży. Tego nie da się cofnąć.`,
+      confirmLabel: "Usuń zdjęcie",
+    });
+    if (!confirmed) return;
     setDeleteError(null);
     try {
       await api.delete(`/trips/${tripId}/photos/${photo.id}`);
@@ -132,6 +140,7 @@ export default function TripPhotos({ tripId, refreshKey = 0, editable = false, o
           );
         })}
       </ul>
+      {confirmDialog}
     </>
   );
 }

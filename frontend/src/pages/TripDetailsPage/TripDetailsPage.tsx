@@ -7,6 +7,8 @@ import { capitalize, formatDate, formatPln } from "../../utils/format";
 import StatusLabel from "../../components/StatusLabel/StatusLabel";
 import TripCover from "../../components/TripCard/TripCover";
 import { useTabIndicator } from "../../hooks/useTabIndicator";
+import { useConfirm } from "../../hooks/useConfirm";
+import MealsSection from "./MealsSection";
 import styles from "./TripDetailsPage.module.css";
 
 interface Tab {
@@ -64,6 +66,7 @@ export default function TripDetailsPage() {
   const navigate = useNavigate();
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const idPrefix = useId();
+  const { confirm, confirmDialog } = useConfirm();
 
   // Zakładki liczymy przed wczesnymi `return` (hooki muszą być wywoływane zawsze w tej samej kolejności)
   const loadedTrip = load.status === "ready" ? load.trip : null;
@@ -152,8 +155,12 @@ export default function TripDetailsPage() {
 
   // Usunięcie podróży ze wszystkim (pozycje, plan, zdjęcia) – nieodwracalne, więc z potwierdzeniem
   async function deleteTrip() {
-    if (!window.confirm(`Na pewno usunąć podróż „${trip.name}”? Usunięte zostaną też wszystkie jej wpisy i zdjęcia. Tego nie da się cofnąć.`))
-      return;
+    const confirmed = await confirm({
+      title: "Usunąć podróż?",
+      message: `„${trip.name}” zostanie usunięta razem ze wszystkimi wpisami i zdjęciami. Tego nie da się cofnąć.`,
+      confirmLabel: "Usuń podróż",
+    });
+    if (!confirmed) return;
     setChanging(true);
     setStatusError(null);
     try {
@@ -324,10 +331,13 @@ export default function TripDetailsPage() {
               </dd>
             </div>
           </dl>
+        ) : activeTab.key === "posilki" ? (
+          <MealsSection tripId={trip.id} readOnly={trip.is_read_only} defaultDate={trip.start_date} />
         ) : (
           <p className={styles.muted}>Sekcja „{activeTab.label}” pojawi się w kolejnym kroku.</p>
         )}
       </div>
+      {confirmDialog}
     </div>
   );
 }

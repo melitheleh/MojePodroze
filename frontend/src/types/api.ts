@@ -84,6 +84,22 @@ export interface Photo {
   file_url: string; // wymaga X-User-Id → api.getBlob
 }
 
+/** Dane formularza posiłku: POST/PUT /api/trips/{id}/meals */
+export interface MealInput {
+  dish: string;
+  restaurant_name: string;
+  meal_date: string; // RRRR-MM-DD
+  cost: number;
+  rating: number | null; // ocena restauracji 1–5
+}
+
+/** Posiłek: GET /api/trips/{id}/meals (posortowane po dacie) */
+export interface Meal extends MealInput {
+  id: number;
+  trip_id: number;
+  created_at: string;
+}
+
 export interface WeatherCity {
   name: string;
   country: string | null;

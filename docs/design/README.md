@@ -192,7 +192,9 @@ Zasady przy kodowaniu:
 - każde pole ma `<label>` (etykieta widoczna albo ukryta wizualnie, np. przy wyszukiwarce),
 - zdjęcia mają `alt` z opisem (podpis z albumu), dekoracyjne – `alt=""`,
 - `<html lang="pl">`,
-- wszystko obsługiwane z klawiatury (Tab, Enter, Spacja), zakładki z `role="tab"` i `aria-selected`,
+- wszystko obsługiwane z klawiatury (Tab, Enter, Spacja), zakładki z `role="tab"` i `aria-selected`
+  (wzorzec WAI-ARIA „Tabs”: Tab wchodzi tylko na aktywną zakładkę, strzałki ← → / Home / End przełączają),
+- potwierdzenie usunięcia we własnym oknie `<dialog>` (nie `window.confirm`): fokus startuje na „Anuluj”, Esc zamyka,
 - błędy formularzy opisane tekstem przy polu, nie tylko kolorem,
 - status podróży zawsze jako napis + kolorowa kreska (kolor nie jest jedyną informacją),
 - strona działa po powiększeniu tekstu do 200%.
@@ -221,7 +223,13 @@ Elementy interaktywne mają `data-testid`, np. `trip-card`, `status-tab-planned`
 `btn-edit-trip`, `btn-delete-trip`, `trip-form-readonly`, `trip-photos`, `input-trip-photo`, `error-photo`,
 `trip-photo-previews`, `trip-photo-preview-{n}`, `btn-remove-photo-{n}` (n = 0, 1, 2…), `btn-upload-photo`,
 `btn-clear-photos`, `photo-uploaded`, `trip-photo-list`, `photo-{id}`, `btn-delete-photo-{id}`,
-`trip-photos-loading`, `trip-photos-error`, `trip-photos-empty`, `photo-delete-error`.
+`trip-photos-loading`, `trip-photos-error`, `trip-photos-empty`, `photo-delete-error`,
+`meals-section`, `meals-loading`, `meals-error`, `meals-retry`, `meals-empty`, `meal-list`, `meal-{id}`,
+`meals-total`, `btn-add-meal`, `meal-form`, `input-meal-dish`, `input-meal-restaurant`, `input-meal-date`,
+`input-meal-cost`, `select-meal-rating`, `btn-save-meal`, `btn-cancel-meal`, `meal-form-error`,
+`error-meal-{pole}` (`error-meal-dish`, `error-meal-restaurant-name`, `error-meal-meal-date`, `error-meal-cost`),
+`btn-edit-meal-{id}`, `btn-delete-meal-{id}`, `meal-delete-error`,
+`confirm-dialog` (okno potwierdzenia usunięcia, zamiast `window.confirm`), `btn-confirm-ok`, `btn-confirm-cancel`.
 
 ## Do dopilnowania
 

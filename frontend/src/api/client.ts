@@ -104,6 +104,8 @@ export const api = {
   get: <T>(path: string) => request<T>("GET", path),
   post: <T>(path: string, body?: unknown) => request<T>("POST", path, body),
   put: <T>(path: string, body?: unknown) => request<T>("PUT", path, body),
+  /** Zmiana części pól, np. dzień i podpis zdjęcia */
+  patch: <T>(path: string, body?: unknown) => request<T>("PATCH", path, body),
   delete: <T>(path: string) => request<T>("DELETE", path),
   /** multipart/form-data, np. wgranie zdjęcia */
   upload: <T>(path: string, form: FormData) => request<T>("POST", path, form),

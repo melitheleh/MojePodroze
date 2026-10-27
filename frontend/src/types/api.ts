@@ -131,6 +131,12 @@ export interface Place {
   created_at: string;
 }
 
+/** Dzień albumu: GET /api/trips/{id}/album */
+export interface AlbumDay {
+  day: string; // RRRR-MM-DD
+  photos: Photo[];
+}
+
 export interface WeatherCity {
   name: string;
   country: string | null;

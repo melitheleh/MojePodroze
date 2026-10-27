@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
 import type { Photo } from "../../types/api";
 import { api, ApiError } from "../../api/client";
+import { formatDate } from "../../utils/format";
 import TripCover from "../../components/TripCard/TripCover";
 import TripPhotos from "../../components/TripPhotos/TripPhotos";
 import styles from "./TripFormPage.module.css";
@@ -35,19 +36,23 @@ interface Item {
 
 interface Props {
   tripId: number;
-  /** Dzień albumu dla nowych zdjęć (pierwszy dzień podróży) */
-  day: string;
+  /** Termin podróży: domyślny dzień nowych zdjęć = pierwszy dzień, wybór tylko w terminie */
+  startDate: string;
+  endDate: string;
 }
 
 // Dodawanie zdjęć w edycji podróży: kilka plików naraz, wysyłanych po kolei
 // (POST /api/trips/{id}/photos przyjmuje jeden plik), od razu, niezależnie od formularza.
-export default function PhotoUpload({ tripId, day }: Props) {
+export default function PhotoUpload({ tripId, startDate, endDate }: Props) {
   const id = useId();
   const [items, setItems] = useState<Item[]>([]);
   const [rejected, setRejected] = useState<string[]>([]);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const [result, setResult] = useState<string | null>(null);
   const [coverKey, setCoverKey] = useState(0);
+  // Dzień albumu dla wybranej paczki zdjęć
+  const [day, setDay] = useState(startDate);
+  const [dayError, setDayError] = useState<string | null>(null);
   const itemsRef = useRef<Item[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -89,6 +94,11 @@ export default function PhotoUpload({ tripId, day }: Props) {
   }
 
   async function uploadAll() {
+    if (day === "" || day < startDate || day > endDate) {
+      setDayError(`Wybierz dzień w terminie podróży: ${formatDate(startDate)} – ${formatDate(endDate)}.`);
+      return;
+    }
+    setDayError(null);
     const queue = items;
     setResult(null);
     setRejected([]);
@@ -127,7 +137,14 @@ export default function PhotoUpload({ tripId, day }: Props) {
       </h2>
       <TripCover key={coverKey} tripId={tripId} className={styles.photoCover} />
       <p className={styles.hint}>Na okładce i na karcie podróży pokazuje się pierwsze zdjęcie z listy poniżej.</p>
-      <TripPhotos tripId={tripId} refreshKey={coverKey} editable onChange={() => setCoverKey((k) => k + 1)} />
+      <TripPhotos
+        tripId={tripId}
+        refreshKey={coverKey}
+        editable
+        onChange={() => setCoverKey((k) => k + 1)}
+        startDate={startDate}
+        endDate={endDate}
+      />
 
       <div className={styles.fieldGroup}>
         <label htmlFor={id} className={styles.label}>
@@ -183,6 +200,32 @@ export default function PhotoUpload({ tripId, day }: Props) {
               </li>
             ))}
           </ul>
+          <div className={styles.fieldGroup}>
+            <label htmlFor={`${id}-day`} className={styles.label}>
+              Dzień zdjęć
+            </label>
+            <input
+              id={`${id}-day`}
+              type="date"
+              className={styles.field}
+              value={day}
+              min={startDate}
+              max={endDate}
+              onChange={(e) => setDay(e.target.value)}
+              disabled={uploading}
+              aria-invalid={dayError ? true : undefined}
+              aria-describedby={dayError ? `${id}-day-hint ${id}-day-error` : `${id}-day-hint`}
+              data-testid="input-upload-day"
+            />
+            <p id={`${id}-day-hint`} className={styles.hint}>
+              Wybrane zdjęcia trafią do tego dnia albumu. Dzień pojedynczego zdjęcia zmienisz ołówkiem przy zdjęciu.
+            </p>
+            {dayError && (
+              <p id={`${id}-day-error`} className={styles.fieldError} data-testid="error-upload-day">
+                {dayError}
+              </p>
+            )}
+          </div>
           <div className={styles.previewActions}>
             <button
               type="button"

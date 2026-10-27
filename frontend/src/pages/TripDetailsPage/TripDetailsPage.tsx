@@ -6,6 +6,7 @@ import { api, ApiError } from "../../api/client";
 import { capitalize, formatDate, formatPln } from "../../utils/format";
 import StatusLabel from "../../components/StatusLabel/StatusLabel";
 import TripCover from "../../components/TripCard/TripCover";
+import TripAlbum from "../../components/TripAlbum/TripAlbum";
 import { useTabIndicator } from "../../hooks/useTabIndicator";
 import { useConfirm } from "../../hooks/useConfirm";
 import CostSection from "../../components/CostSection/CostSection";
@@ -308,30 +309,43 @@ export default function TripDetailsPage() {
         data-testid="section-panel"
       >
         {activeTab.key === "przeglad" ? (
-          <dl className={styles.overview}>
-            <div>
-              <dt>Cel</dt>
-              <dd>
-                {trip.destination_city}, {trip.destination_country}
-              </dd>
-            </div>
-            <div>
-              <dt>Termin</dt>
-              <dd>
-                {formatDate(trip.start_date)} – {formatDate(trip.end_date)}
-              </dd>
-            </div>
-            <div>
-              <dt>Czas trwania</dt>
-              <dd>{trip.duration_days === 1 ? "1 dzień" : `${trip.duration_days} dni`}</dd>
-            </div>
-            <div>
-              <dt>Budżet</dt>
-              <dd data-testid="trip-budget">
-                {trip.planned_budget === null ? "nie ustalono" : formatPln(trip.planned_budget)}
-              </dd>
-            </div>
-          </dl>
+          <div className={styles.overviewPanel}>
+            <dl className={styles.overview}>
+              <div>
+                <dt>Cel</dt>
+                <dd>
+                  {trip.destination_city}, {trip.destination_country}
+                </dd>
+              </div>
+              <div>
+                <dt>Termin</dt>
+                <dd>
+                  {formatDate(trip.start_date)} – {formatDate(trip.end_date)}
+                </dd>
+              </div>
+              <div>
+                <dt>Czas trwania</dt>
+                <dd>{trip.duration_days === 1 ? "1 dzień" : `${trip.duration_days} dni`}</dd>
+              </div>
+              <div>
+                <dt>Budżet</dt>
+                <dd data-testid="trip-budget">
+                  {trip.planned_budget === null ? "nie ustalono" : formatPln(trip.planned_budget)}
+                </dd>
+              </div>
+            </dl>
+            <section className={styles.albumSection} aria-labelledby={`${idPrefix}-album`}>
+              <h2 id={`${idPrefix}-album`} className={styles.subtitle}>
+                Zdjęcia
+              </h2>
+              <TripAlbum
+                tripId={trip.id}
+                startDate={trip.start_date}
+                durationDays={trip.duration_days}
+                readOnly={trip.is_read_only}
+              />
+            </section>
+          </div>
         ) : activeTab.key === "posilki" ? (
           <CostSection config={MEALS} tripId={trip.id} readOnly={trip.is_read_only} defaultDate={trip.start_date} />
         ) : activeTab.key === "transport" ? (

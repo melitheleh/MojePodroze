@@ -1,35 +1,11 @@
 import { useEffect, useState } from "react";
 import type { Photo } from "../../types/api";
 import { api, ApiError } from "../../api/client";
-import { capitalize } from "../../utils/format";
+import PhotoImage from "../PhotoImage/PhotoImage";
+import PhotoEditDialog from "./PhotoEditDialog";
+import { capitalize, formatDate } from "../../utils/format";
 import { useConfirm } from "../../hooks/useConfirm";
 import styles from "./TripPhotos.module.css";
-
-/** Jedno zdjęcie: plik wymaga nagłówka X-User-Id, więc fetch → blob → URL.createObjectURL */
-function PhotoImage({ photo, alt }: { photo: Photo; alt: string }) {
-  const [src, setSrc] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    let objectUrl: string | null = null;
-    api
-      .getBlob(photo.file_url)
-      .then((blob) => {
-        if (cancelled) return;
-        objectUrl = URL.createObjectURL(blob);
-        setSrc(objectUrl);
-      })
-      .catch(() => {
-        // zostaje szare pole – błąd jednego zdjęcia nie psuje reszty
-      });
-    return () => {
-      cancelled = true;
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
-    };
-  }, [photo.file_url]);
-
-  return src ? <img src={src} alt={alt} className={styles.image} /> : <div className={styles.image} aria-hidden="true" />;
-}
 
 interface Props {
   tripId: number;
@@ -37,8 +13,16 @@ interface Props {
   refreshKey?: number;
   /** Pokaż przyciski usuwania (edycja podróży) */
   editable?: boolean;
-  /** Wywoływane po usunięciu zdjęcia (np. odświeżenie okładki) */
+  /** Wywoływane po usunięciu lub zmianie zdjęcia (np. odświeżenie okładki) */
   onChange?: () => void;
+  /** Termin podróży – zakres dnia przy edycji zdjęcia */
+  startDate?: string;
+  endDate?: string;
+}
+
+/** Kolejność jak w backendzie: dzień, potem kolejność dodania */
+function byDay(a: Photo, b: Photo): number {
+  return a.day.localeCompare(b.day) || a.uploaded_at.localeCompare(b.uploaded_at) || a.id - b.id;
 }
 
 type LoadState =
@@ -47,10 +31,22 @@ type LoadState =
   | { status: "error"; message: string };
 
 // Siatka wszystkich zdjęć podróży: GET /api/trips/{id}/photos, usuwanie: DELETE …/photos/{photoId}.
-export default function TripPhotos({ tripId, refreshKey = 0, editable = false, onChange }: Props) {
+export default function TripPhotos({ tripId, refreshKey = 0, editable = false, onChange, startDate, endDate }: Props) {
   const [load, setLoad] = useState<LoadState>({ status: "loading" });
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const { confirm, confirmDialog } = useConfirm();
+  const [editing, setEditing] = useState<Photo | null>(null);
+
+  // Po zapisie dnia lub podpisu: podmień zdjęcie i ułóż listę od nowa (okładka może się zmienić)
+  function onSaved(saved: Photo) {
+    setEditing(null);
+    setLoad((current) =>
+      current.status === "ready"
+        ? { status: "ready", photos: current.photos.map((p) => (p.id === saved.id ? saved : p)).sort(byDay) }
+        : current,
+    );
+    onChange?.();
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -121,8 +117,27 @@ export default function TripPhotos({ tripId, refreshKey = 0, editable = false, o
           const label = photo.caption ?? `zdjęcie ${index + 1}`;
           return (
             <li key={photo.id} className={styles.item} data-testid={`photo-${photo.id}`}>
-              <PhotoImage photo={photo} alt={photo.caption ?? `Zdjęcie ${index + 1} z podróży`} />
+              <PhotoImage photo={photo} alt={photo.caption ?? `Zdjęcie ${index + 1} z podróży`} className={styles.image} />
               {index === 0 && <span className={styles.badge}>Okładka</span>}
+              {editable && (
+                <p className={styles.meta} data-testid={`photo-day-${photo.id}`}>
+                  {formatDate(photo.day)}
+                  {photo.caption && <span className={styles.metaCaption}>{photo.caption}</span>}
+                </p>
+              )}
+              {editable && (
+                <button
+                  type="button"
+                  className={styles.edit}
+                  onClick={() => setEditing(photo)}
+                  aria-label={`Zmień dzień i podpis: ${label}`}
+                  data-testid={`btn-edit-photo-${photo.id}`}
+                >
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                    <path d="M4 20h4L19 9l-4-4L4 16v4z" strokeLinejoin="round" />
+                  </svg>
+                </button>
+              )}
               {editable && (
                 <button
                   type="button"
@@ -141,6 +156,16 @@ export default function TripPhotos({ tripId, refreshKey = 0, editable = false, o
         })}
       </ul>
       {confirmDialog}
+      {editing && (
+        <PhotoEditDialog
+          tripId={tripId}
+          photo={editing}
+          startDate={startDate}
+          endDate={endDate}
+          onSaved={onSaved}
+          onClose={() => setEditing(null)}
+        />
+      )}
     </>
   );
 }

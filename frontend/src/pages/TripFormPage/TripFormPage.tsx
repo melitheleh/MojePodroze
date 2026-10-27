@@ -401,7 +401,9 @@ export default function TripFormPage() {
               </button>
             </div>
           </form>
-          {dict.trip && <PhotoUpload tripId={dict.trip.id} day={dict.trip.start_date} />}
+          {dict.trip && (
+            <PhotoUpload tripId={dict.trip.id} startDate={dict.trip.start_date} endDate={dict.trip.end_date} />
+          )}
         </>
       )}
       {confirmDialog}

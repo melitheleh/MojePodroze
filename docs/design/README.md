@@ -241,6 +241,12 @@ noclegi i atrakcje (`CostSection`, prefiks `place`/`places`): `places-section`, 
 `input-place-note`, `btn-save-place`, `btn-cancel-place`, `place-form-error`, `error-place-{pole}`
 (np. `error-place-visit-date`), `btn-edit-place-{id}`, `btn-delete-place-{id}`, `place-delete-error`,
 `btn-copy-{prefiks}-{id}` w każdej sekcji kosztowej (np. `btn-copy-meal-3`, `btn-copy-place-7`) – kopia pozycji do formularza,
+album w zakładce „Przegląd”: `trip-album`, `album-loading`, `album-error`, `album-retry`, `album-empty`,
+`link-add-photos`, `album-day-{RRRR-MM-DD}`, `album-photo-{id}` (miniatura – otwiera podgląd), `photo-viewer`,
+`photo-viewer-caption`, `photo-viewer-counter`, `btn-viewer-prev`, `btn-viewer-next`, `btn-viewer-close`,
+dzień i podpis zdjęcia (edycja podróży): `input-upload-day`, `error-upload-day`, `photo-day-{id}`,
+`btn-edit-photo-{id}`, `photo-edit-dialog`, `input-photo-day`, `input-photo-caption`, `error-photo-day`,
+`error-photo-caption`, `photo-edit-error`, `btn-save-photo-edit`, `btn-cancel-photo-edit`,
 `confirm-dialog` (okno potwierdzenia usunięcia, zamiast `window.confirm`), `btn-confirm-ok`, `btn-confirm-cancel`.
 
 ## Do dopilnowania

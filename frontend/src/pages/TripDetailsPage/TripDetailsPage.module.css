@@ -247,6 +247,26 @@
   }
 }
 
+/* Przegląd: dane podróży, pod nimi album */
+.overviewPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+
+.albumSection {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-top: 28px;
+  border-top: 1px solid var(--color-divider);
+}
+
+.subtitle {
+  font-size: 22px;
+  font-weight: 500;
+}
+
 /* Przegląd: lista „etykieta – wartość” */
 .overview {
   margin: 0;

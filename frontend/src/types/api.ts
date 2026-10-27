@@ -234,6 +234,22 @@ export interface Recommendations {
   pending_wishlist: { name: string; trip_ids: number[] }[];
 }
 
+/** GET /api/stats – tylko podróże zrealizowane i w archiwum */
+export interface Statistics {
+  realized_trips_count: number;
+  total_cost: number;
+  average_trip_cost: number | null;
+  average_daily_cost: number | null;
+  trips_per_year: { year: number; trips_count: number }[];
+  cost_by_character: {
+    character: string;
+    trips_count: number;
+    total_cost: number;
+    average_cost: number;
+    average_daily_cost: number;
+  }[];
+}
+
 export interface WeatherCity {
   name: string;
   country: string | null;

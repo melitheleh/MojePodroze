@@ -2,6 +2,7 @@
 // i wygląd pozycji na liście. Nowa sekcja = nowy przepis tutaj + gałąź w TripDetailsPage.
 import type { Expense, Flight, Meal, PlaceKind, Place, PlanPoint, Transport } from "../../types/api";
 import type { SectionConfig } from "../../components/ItemSection/ItemSection";
+import type { ChecklistConfig } from "../../components/ChecklistSection/ChecklistSection";
 import { capitalize, formatDate, formatDateTime } from "../../utils/format";
 
 const MAX_FLIGHT_HOURS = 48;
@@ -246,4 +247,42 @@ export const PLAN: SectionConfig<PlanPoint> = {
   itemNote: (p) => p.description,
   removeMessage: (p) => `„${p.place}” (${formatDate(p.day)})`,
   groupByDay: (p) => p.day,
+};
+
+// Listy do odhaczania (ChecklistSection); „Zaliczone: 2 z 5” – bez odmiany liczebników
+export const WISHLIST: ChecklistConfig = {
+  path: "wishlist",
+  title: "Chcę odwiedzić",
+  checkKey: "visited",
+  hasNote: true,
+  testId: { single: "wishlist-item", plural: "wishlist" },
+  texts: {
+    nameLabel: "Miejsce",
+    add: "Dodaj",
+    empty: "Lista jest pusta. Dopisz miejsca, które chcesz zobaczyć – odhaczysz je na miejscu.",
+    progress: (done, total) => `Zaliczone: ${done} z ${total}`,
+    loading: "Wczytywanie listy…",
+    loadError: "Nie udało się wczytać listy.",
+    removeTitle: "Usunąć miejsce?",
+    remove: "Usuń miejsce",
+  },
+};
+
+// Zagraniczna podróż dostaje od backendu domyślną listę (is_default), np. paszport
+export const PACKING: ChecklistConfig = {
+  path: "packing-items",
+  title: "Lista pakowania",
+  checkKey: "packed",
+  hasNote: false,
+  testId: { single: "packing-item", plural: "packing" },
+  texts: {
+    nameLabel: "Rzecz do spakowania",
+    add: "Dodaj",
+    empty: "Lista pakowania jest pusta. Dopisz pierwszą rzecz.",
+    progress: (done, total) => `Spakowane: ${done} z ${total}`,
+    loading: "Wczytywanie listy pakowania…",
+    loadError: "Nie udało się wczytać listy pakowania.",
+    removeTitle: "Usunąć z listy?",
+    remove: "Usuń z listy",
+  },
 };

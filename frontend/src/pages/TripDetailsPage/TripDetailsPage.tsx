@@ -10,7 +10,8 @@ import TripAlbum from "../../components/TripAlbum/TripAlbum";
 import { useTabIndicator } from "../../hooks/useTabIndicator";
 import { useConfirm } from "../../hooks/useConfirm";
 import ItemSection from "../../components/ItemSection/ItemSection";
-import { EXPENSES, FLIGHTS, MEALS, PLACES, PLAN, TRANSPORTS } from "./sections";
+import ChecklistSection from "../../components/ChecklistSection/ChecklistSection";
+import { EXPENSES, FLIGHTS, MEALS, PACKING, PLACES, PLAN, TRANSPORTS, WISHLIST } from "./sections";
 import styles from "./TripDetailsPage.module.css";
 
 interface Tab {
@@ -356,6 +357,10 @@ export default function TripDetailsPage() {
           </div>
         ) : activeTab.key === "plan" ? (
           <ItemSection config={PLAN} {...sectionProps} />
+        ) : activeTab.key === "chce-odwiedzic" ? (
+          <ChecklistSection config={WISHLIST} tripId={trip.id} readOnly={trip.is_read_only} />
+        ) : activeTab.key === "pakowanie" ? (
+          <ChecklistSection config={PACKING} tripId={trip.id} readOnly={trip.is_read_only} />
         ) : activeTab.key === "loty" ? (
           <ItemSection config={FLIGHTS} {...sectionProps} />
         ) : activeTab.key === "posilki" ? (

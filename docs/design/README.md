@@ -257,6 +257,12 @@ plan dnia (`ItemSection`, prefiks `plan-point`/`plan-points`, bez kosztu, wedłu
 `input-plan-point-time`, `input-plan-point-description`, `btn-save-plan-point`, `btn-cancel-plan-point`,
 `plan-point-form-error`, `error-plan-point-{pole}`, `btn-edit-plan-point-{id}`, `btn-copy-plan-point-{id}`,
 `btn-delete-plan-point-{id}`, `plan-point-delete-error`,
+listy do odhaczania (`ChecklistSection`; „Chcę odwiedzić”: prefiks `wishlist-item`/`wishlist`, pakowanie:
+`packing-item`/`packing`): `{plural}-section`, `{plural}-loading`, `{plural}-error`, `{plural}-retry`, `{plural}-empty`,
+`{plural}-progress`, `{single}-list`, `{single}-{id}`, `checkbox-{single}-{id}`, `input-{single}-name`,
+`input-{single}-note` (tylko „Chcę odwiedzić”), `btn-add-{single}`, `{single}-add-error`, `{single}-error`,
+`btn-edit-{single}-{id}`, `input-edit-{single}-name`, `input-edit-{single}-note`, `btn-save-{single}-{id}`,
+`btn-cancel-{single}-{id}`, `btn-delete-{single}-{id}` (np. `checkbox-packing-item-12`, `wishlist-progress`),
 `btn-copy-{prefiks}-{id}` w każdej sekcji kosztowej (np. `btn-copy-meal-3`, `btn-copy-place-7`) – kopia pozycji do formularza,
 album w zakładce „Przegląd”: `trip-album`, `album-loading`, `album-error`, `album-retry`, `album-empty`,
 `link-add-photos`, `album-day-{RRRR-MM-DD}`, `album-photo-{id}` (miniatura – otwiera podgląd), `photo-viewer`,

@@ -1,7 +1,7 @@
-// Przepisy sekcji kosztowych dla CostSection: pola formularza (zgodne z backend/app/schemas/items.py)
+// Przepisy sekcji dla ItemSection: pola formularza (zgodne z backend/app/schemas/items.py i planning.py)
 // i wygląd pozycji na liście. Nowa sekcja = nowy przepis tutaj + gałąź w TripDetailsPage.
-import type { Expense, Flight, Meal, Place, PlaceKind, Transport } from "../../types/api";
-import type { SectionConfig } from "../../components/CostSection/CostSection";
+import type { Expense, Flight, Meal, PlaceKind, Place, PlanPoint, Transport } from "../../types/api";
+import type { SectionConfig } from "../../components/ItemSection/ItemSection";
 import { capitalize, formatDate, formatDateTime } from "../../utils/format";
 
 const MAX_FLIGHT_HOURS = 48;
@@ -216,4 +216,34 @@ export const EXPENSES: SectionConfig<Expense> = {
   itemTitle: (e) => e.description,
   itemMeta: (e) => [e.category.name, e.expense_date ? formatDate(e.expense_date) : "bez daty"],
   removeMessage: (e) => `„${e.description}” (${e.category.name})`,
+};
+
+// Plan dnia – bez kosztu; lista według dni, w dniu według godziny (sortuje backend)
+export const PLAN: SectionConfig<PlanPoint> = {
+  path: "plan-points",
+  title: "Plan dnia",
+  testId: { single: "plan-point", plural: "plan-points" },
+  texts: {
+    add: "Dodaj punkt planu",
+    new: "Nowy punkt planu",
+    edit: "Edytuj punkt planu",
+    remove: "Usuń punkt",
+    removeTitle: "Usunąć punkt planu?",
+    empty: "Plan jest pusty. Dodaj pierwszy punkt – miejsce i dzień, a godzinę, jeśli ją znasz.",
+    loading: "Wczytywanie planu…",
+    loadError: "Nie udało się wczytać planu.",
+    saveError: "Nie udało się zapisać punktu planu.",
+    removeError: "Nie udało się usunąć punktu planu.",
+  },
+  fields: [
+    { name: "place", label: "Miejsce", kind: "text", testKey: "place", required: true, requiredMessage: "Podaj miejsce.", maxLength: 150 },
+    { name: "day", label: "Dzień", kind: "date", testKey: "day", required: true, requiredMessage: "Wybierz dzień." },
+    { name: "planned_time", label: "Godzina (opcjonalnie)", kind: "time", testKey: "time" },
+    { name: "description", label: "Opis (opcjonalnie)", kind: "textarea", testKey: "description", maxLength: 2000 },
+  ],
+  itemTitle: (p) => p.place,
+  itemMeta: (p) => [p.planned_time ? p.planned_time.slice(0, 5) : "bez godziny"],
+  itemNote: (p) => p.description,
+  removeMessage: (p) => `„${p.place}” (${formatDate(p.day)})`,
+  groupByDay: (p) => p.day,
 };

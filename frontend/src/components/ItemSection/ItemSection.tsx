@@ -2,9 +2,9 @@ import { useEffect, useId, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import type { Dictionaries } from "../../types/api";
 import { api, ApiError } from "../../api/client";
-import { formatDate, formatPln } from "../../utils/format";
+import { formatDate, formatPln, formatWeekday, tripDayNumber } from "../../utils/format";
 import { useConfirm } from "../../hooks/useConfirm";
-import styles from "./CostSection.module.css";
+import styles from "./ItemSection.module.css";
 
 export interface Option {
   value: string;
@@ -17,8 +17,8 @@ export interface FieldDef {
   name: string;
   label: string;
   /** text – tekst, textarea – dłuższy tekst (na całą szerokość), date – data, datetime – data z godziną,
-      money – kwota PLN, rating – ocena 1–5 (opcjonalna), select – lista */
-  kind: "text" | "textarea" | "date" | "datetime" | "money" | "rating" | "select";
+      time – sama godzina, money – kwota PLN, rating – ocena 1–5 (opcjonalna), select – lista */
+  kind: "text" | "textarea" | "date" | "datetime" | "time" | "money" | "rating" | "select";
   /** Końcówka data-testid pola: input-{testId sekcji}-{testKey}, np. input-meal-restaurant */
   testKey: string;
   required?: boolean;
@@ -36,8 +36,11 @@ export interface FieldDef {
   fromItem?: (item: never) => string | number | null;
 }
 
-/** Przepis na sekcję kosztową: ścieżka API, napisy, pola formularza i wygląd pozycji na liście */
-export interface SectionConfig<T extends { id: number; cost: number }> {
+/** Pozycja z API: zawsze ma id; koszt tylko w sekcjach kosztowych */
+type Item = { id: number; cost?: number };
+
+/** Przepis na sekcję: ścieżka API, napisy, pola formularza i wygląd pozycji na liście */
+export interface SectionConfig<T extends Item> {
   /** Ścieżka w API: /api/trips/{id}/{path} */
   path: string;
   title: string;
@@ -69,6 +72,8 @@ export interface SectionConfig<T extends { id: number; cost: number }> {
   itemNote?: (item: T) => string | null;
   /** Opis pozycji w oknie usuwania, np. „Pierogi” (Bar Mleczny, 12.11.2026) */
   removeMessage: (item: T) => string;
+  /** Lista pogrupowana według dni (np. plan dnia): dzień pozycji RRRR-MM-DD */
+  groupByDay?: (item: T) => string;
 }
 
 type Values = Record<string, string>;
@@ -135,9 +140,15 @@ function toValues(fields: FieldDef[], item: Record<string, unknown>): Values {
   for (const field of fields) {
     const raw = field.fromItem ? field.fromItem(item as never) : item[field.name];
     const text = raw === null || raw === undefined ? "" : String(raw);
-    // money: przecinek po polsku; datetime: pole przyjmuje "RRRR-MM-DDTGG:MM" (bez sekund z API)
+    // money: przecinek po polsku; datetime/time: pole przyjmuje "RRRR-MM-DDTGG:MM" / "GG:MM" (bez sekund z API)
     values[field.name] =
-      field.kind === "money" ? text.replace(".", ",") : field.kind === "datetime" ? text.slice(0, 16) : text;
+      field.kind === "money"
+        ? text.replace(".", ",")
+        : field.kind === "datetime"
+          ? text.slice(0, 16)
+          : field.kind === "time"
+            ? text.slice(0, 5)
+            : text;
   }
   return values;
 }
@@ -154,6 +165,18 @@ function emptyValues(fields: FieldDef[], defaultDate: string, dict: Dictionaries
   return values;
 }
 
+/** Pozycje po kolei pogrupowane według dnia (backend zwraca je już posortowane) */
+function groupItems<T>(items: T[], dayOf: (item: T) => string): [string, T[]][] {
+  const groups: [string, T[]][] = [];
+  for (const item of items) {
+    const day = dayOf(item);
+    const last = groups[groups.length - 1];
+    if (last && last[0] === day) last[1].push(item);
+    else groups.push([day, [item]]);
+  }
+  return groups;
+}
+
 /** Ocena jako gwiazdki (dekoracja) + napis dla czytników ekranu */
 function Rating({ value }: { value: number | null }) {
   if (value === null) return <span className={styles.muted}>bez oceny</span>;
@@ -165,7 +188,7 @@ function Rating({ value }: { value: number | null }) {
   );
 }
 
-interface Props<T extends { id: number; cost: number }> {
+interface Props<T extends Item> {
   config: SectionConfig<T>;
   tripId: number;
   /** Archiwum: lista bez formularza i przycisków */
@@ -175,9 +198,9 @@ interface Props<T extends { id: number; cost: number }> {
   endDate: string;
 }
 
-// Sekcja kosztowa (posiłki, transport, …): lista z GET /api/trips/{id}/{path}, dodawanie (POST),
+// Sekcja pozycji podróży (loty, posiłki, …, plan dnia): lista z GET /api/trips/{id}/{path}, dodawanie (POST),
 // edycja (PUT), usuwanie (DELETE). Co pokazać i jakie pola – z przepisu `config`.
-export default function CostSection<T extends { id: number; cost: number }>({
+export default function ItemSection<T extends Item>({
   config,
   tripId,
   readOnly,
@@ -187,6 +210,8 @@ export default function CostSection<T extends { id: number; cost: number }>({
   const defaultDate = startDate;
   const { fields, texts, testId } = config;
   const needsDict = fields.some((f) => f.options);
+  // Sekcja kosztowa: suma „Razem” i wzmianka o kosztorysie przy usuwaniu
+  const hasCost = fields.some((f) => f.kind === "money");
   const [load, setLoad] = useState<LoadState<T>>({ status: "loading" });
   const [reloadKey, setReloadKey] = useState(0);
   const [mode, setMode] = useState<FormMode<T>>({ kind: "closed" });
@@ -276,7 +301,7 @@ export default function CostSection<T extends { id: number; cost: number }>({
   async function deleteItem(item: T) {
     const confirmed = await confirm({
       title: texts.removeTitle,
-      message: `${config.removeMessage(item)} zniknie z listy i z kosztorysu.`,
+      message: `${config.removeMessage(item)} zniknie z listy${hasCost ? " i z kosztorysu" : ""}.`,
       confirmLabel: texts.remove,
     });
     if (!confirmed) return;
@@ -342,7 +367,15 @@ export default function CostSection<T extends { id: number; cost: number }>({
         ) : (
           <input
             {...common}
-            type={field.kind === "date" ? "date" : field.kind === "datetime" ? "datetime-local" : "text"}
+            type={
+              field.kind === "date"
+                ? "date"
+                : field.kind === "datetime"
+                  ? "datetime-local"
+                  : field.kind === "time"
+                    ? "time"
+                    : "text"
+            }
             // Kalendarz otwiera się na terminie podróży, dni spoza niego są wyszarzone
             {...tripRange(field, startDate, endDate)}
             {...config.limits?.(values)[field.name]}
@@ -391,7 +424,68 @@ export default function CostSection<T extends { id: number; cost: number }>({
   }
 
   const items = load.items;
-  const total = items.reduce((sum, i) => sum + i.cost, 0);
+  const total = items.reduce((sum, i) => sum + (i.cost ?? 0), 0);
+
+  function renderItem(item: T) {
+    const title = config.itemTitle(item);
+    return (
+      <li key={item.id} className={styles.item} data-testid={`${testId.single}-${item.id}`}>
+        <div className={styles.itemText}>
+          <p className={styles.itemTitle}>{title}</p>
+          <p className={styles.itemMeta}>
+            {config.itemMeta(item).map((part, index) => (
+              <span key={index}>
+                {index > 0 && (
+                  <>
+                    <span aria-hidden="true"> · </span>
+                    <span className="visually-hidden">, </span>
+                  </>
+                )}
+                {part}
+              </span>
+            ))}
+          </p>
+          {config.itemRating && <Rating value={config.itemRating(item)} />}
+          {config.itemNote?.(item) && <p className={styles.itemNote}>{config.itemNote(item)}</p>}
+        </div>
+        {hasCost && <p className={styles.cost}>{formatPln(item.cost ?? 0)}</p>}
+        {!readOnly && (
+          <div className={styles.itemActions}>
+            <button
+              type="button"
+              className={styles.small}
+              onClick={() => openForm({ kind: "edit", item })}
+              aria-label={`${texts.edit}: ${title}`}
+              data-testid={`btn-edit-${testId.single}-${item.id}`}
+            >
+              Edytuj
+            </button>
+            {/* Kopia: formularz nowej pozycji z tymi samymi danymi – zapis dopiero po „Dodaj” */}
+            <button
+              type="button"
+              className={styles.small}
+              onClick={() => openForm({ kind: "add", from: item })}
+              aria-label={`Kopiuj: ${title}`}
+              data-testid={`btn-copy-${testId.single}-${item.id}`}
+            >
+              Kopiuj
+            </button>
+            <button
+              type="button"
+              className={styles.danger}
+              onClick={() => deleteItem(item)}
+              disabled={deletingId === item.id}
+              aria-label={`${texts.remove}: ${title}`}
+              data-testid={`btn-delete-${testId.single}-${item.id}`}
+            >
+              Usuń
+            </button>
+          </div>
+        )}
+      </li>
+    );
+  }
+
 
   return (
     <section
@@ -463,70 +557,30 @@ export default function CostSection<T extends { id: number; cost: number }>({
         </p>
       ) : (
         <>
-          <ul className={styles.list} data-testid={`${testId.single}-list`}>
-            {items.map((item) => {
-              const title = config.itemTitle(item);
+          {config.groupByDay ? (
+            // Plan dnia: nagłówek „Dzień N · poniedziałek, 21.09.2026”, pod nim pozycje tego dnia
+            groupItems(items, config.groupByDay).map(([day, dayItems]) => {
+              const n = tripDayNumber(day, startDate, endDate);
               return (
-                <li key={item.id} className={styles.item} data-testid={`${testId.single}-${item.id}`}>
-                  <div className={styles.itemText}>
-                    <p className={styles.itemTitle}>{title}</p>
-                    <p className={styles.itemMeta}>
-                      {config.itemMeta(item).map((part, index) => (
-                        <span key={index}>
-                          {index > 0 && (
-                            <>
-                              <span aria-hidden="true"> · </span>
-                              <span className="visually-hidden">, </span>
-                            </>
-                          )}
-                          {part}
-                        </span>
-                      ))}
-                    </p>
-                    {config.itemRating && <Rating value={config.itemRating(item)} />}
-                    {config.itemNote?.(item) && <p className={styles.itemNote}>{config.itemNote(item)}</p>}
-                  </div>
-                  <p className={styles.cost}>{formatPln(item.cost)}</p>
-                  {!readOnly && (
-                    <div className={styles.itemActions}>
-                      <button
-                        type="button"
-                        className={styles.small}
-                        onClick={() => openForm({ kind: "edit", item })}
-                        aria-label={`${texts.edit}: ${title}`}
-                        data-testid={`btn-edit-${testId.single}-${item.id}`}
-                      >
-                        Edytuj
-                      </button>
-                      {/* Kopia: formularz nowej pozycji z tymi samymi danymi – zapis dopiero po „Dodaj” */}
-                      <button
-                        type="button"
-                        className={styles.small}
-                        onClick={() => openForm({ kind: "add", from: item })}
-                        aria-label={`Kopiuj: ${title}`}
-                        data-testid={`btn-copy-${testId.single}-${item.id}`}
-                      >
-                        Kopiuj
-                      </button>
-                      <button
-                        type="button"
-                        className={styles.danger}
-                        onClick={() => deleteItem(item)}
-                        disabled={deletingId === item.id}
-                        aria-label={`${texts.remove}: ${title}`}
-                        data-testid={`btn-delete-${testId.single}-${item.id}`}
-                      >
-                        Usuń
-                      </button>
-                    </div>
-                  )}
-                </li>
+                <section key={day} className={styles.day} data-testid={`${testId.single}-day-${day}`}>
+                  <h3 className={styles.dayTitle}>
+                    {n !== null && <>Dzień {n} · </>}
+                    {formatWeekday(day)}, {formatDate(day)}
+                  </h3>
+                  <ul className={styles.list}>{dayItems.map(renderItem)}</ul>
+                </section>
               );
-            })}
-          </ul>
-          <p className={styles.total}>
-            Razem: <strong data-testid={`${testId.plural}-total`}>{formatPln(total)}</strong>
-          </p>
+            })
+          ) : (
+            <ul className={styles.list} data-testid={`${testId.single}-list`}>
+              {items.map(renderItem)}
+            </ul>
+          )}
+          {hasCost && (
+            <p className={styles.total}>
+              Razem: <strong data-testid={`${testId.plural}-total`}>{formatPln(total)}</strong>
+            </p>
+          )}
         </>
       )}
       {confirmDialog}

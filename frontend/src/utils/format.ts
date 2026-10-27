@@ -10,6 +10,22 @@ export function formatDateTime(iso: string): string {
   return `${formatDate(date)}, ${time.slice(0, 5)}`;
 }
 
+/** "2026-09-21" → "poniedziałek" */
+export function formatWeekday(iso: string): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("pl-PL", { weekday: "long", timeZone: "UTC" });
+}
+
+/** Numer dnia podróży: 1 = dzień startu; null, gdy data jest poza terminem */
+export function tripDayNumber(day: string, startDate: string, endDate: string): number | null {
+  if (day < startDate || day > endDate) return null;
+  const toUtc = (iso: string) => {
+    const [y, m, d] = iso.split("-").map(Number);
+    return Date.UTC(y, m - 1, d);
+  };
+  return Math.round((toUtc(day) - toUtc(startDate)) / 86_400_000) + 1;
+}
+
 /** Kwota w złotych, np. 427 → "427,00 zł" */
 export function formatPln(value: number): string {
   return value.toLocaleString("pl-PL", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " zł";

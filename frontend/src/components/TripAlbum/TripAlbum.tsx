@@ -3,19 +3,9 @@ import type { KeyboardEvent, MouseEvent } from "react";
 import { Link } from "react-router";
 import type { AlbumDay, Photo } from "../../types/api";
 import { api, ApiError } from "../../api/client";
-import { formatDate } from "../../utils/format";
+import { formatDate, tripDayNumber } from "../../utils/format";
 import PhotoImage from "../PhotoImage/PhotoImage";
 import styles from "./TripAlbum.module.css";
-
-/** Numer dnia podróży: 1 = dzień startu; null, gdy zdjęcie jest spoza terminu */
-function dayNumber(day: string, startDate: string, durationDays: number): number | null {
-  const toUtc = (iso: string) => {
-    const [y, m, d] = iso.split("-").map(Number);
-    return Date.UTC(y, m - 1, d);
-  };
-  const n = Math.round((toUtc(day) - toUtc(startDate)) / 86_400_000) + 1;
-  return n >= 1 && n <= durationDays ? n : null;
-}
 
 function photoAlt(photo: Photo): string {
   return photo.caption ?? `Zdjęcie z dnia ${formatDate(photo.day)}`;
@@ -138,13 +128,13 @@ type LoadState =
 interface Props {
   tripId: number;
   startDate: string;
-  durationDays: number;
+  endDate: string;
   /** Archiwum: bez podpowiedzi o dodawaniu zdjęć */
   readOnly: boolean;
 }
 
 // Album podróży (zakładka „Przegląd”): GET /api/trips/{id}/album – zdjęcia według dni, podgląd po kliknięciu.
-export default function TripAlbum({ tripId, startDate, durationDays, readOnly }: Props) {
+export default function TripAlbum({ tripId, startDate, endDate, readOnly }: Props) {
   const [load, setLoad] = useState<LoadState>({ status: "loading" });
   const [reloadKey, setReloadKey] = useState(0);
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
@@ -215,7 +205,7 @@ export default function TripAlbum({ tripId, startDate, durationDays, readOnly }:
   return (
     <div className={styles.album} data-testid="trip-album">
       {load.days.map((group) => {
-        const n = dayNumber(group.day, startDate, durationDays);
+        const n = tripDayNumber(group.day, startDate, endDate);
         return (
           <section key={group.day} className={styles.day} data-testid={`album-day-${group.day}`}>
             <h3 className={styles.dayTitle}>

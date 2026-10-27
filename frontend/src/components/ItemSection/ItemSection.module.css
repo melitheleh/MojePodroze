@@ -1,4 +1,4 @@
-/* Sekcja kosztowa „Posiłki”: nagłówek z przyciskiem, formularz, lista pozycji */
+/* Sekcja pozycji podróży: nagłówek z przyciskiem, formularz, lista pozycji (opcjonalnie według dni) */
 .section {
   display: flex;
   flex-direction: column;
@@ -114,6 +114,24 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 10px;
+}
+
+/* Plan dnia: grupa pozycji pod nagłówkiem dnia */
+.day {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Nagłówek dnia jak etykiety: WERSALIKI, 12 px, kreska szałwii pod spodem */
+.dayTitle {
+  margin: 8px 0 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--color-accent);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
 }
 
 /* Lista pozycji: wiersz = opis po lewej, koszt i przyciski po prawej */

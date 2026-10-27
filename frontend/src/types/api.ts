@@ -131,6 +131,16 @@ export interface Place {
   created_at: string;
 }
 
+/** Punkt planu dnia: GET /api/trips/{id}/plan-points (posortowane po dniu i godzinie) */
+export interface PlanPoint {
+  id: number;
+  trip_id: number;
+  day: string; // RRRR-MM-DD, w terminie podróży (inaczej 422 DATE_OUTSIDE_TRIP)
+  planned_time: string | null; // GG:MM:SS
+  place: string;
+  description: string | null;
+}
+
 /** Lot (tylko podróż zagraniczna): GET /api/trips/{id}/flights; daty z godziną bez strefy */
 export interface Flight {
   id: number;

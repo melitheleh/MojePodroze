@@ -1,6 +1,6 @@
 // Przepisy sekcji kosztowych dla CostSection: pola formularza (zgodne z backend/app/schemas/items.py)
 // i wygląd pozycji na liście. Nowa sekcja = nowy przepis tutaj + gałąź w TripDetailsPage.
-import type { Meal, Place, PlaceKind, Transport } from "../../types/api";
+import type { Expense, Meal, Place, PlaceKind, Transport } from "../../types/api";
 import type { SectionConfig } from "../../components/CostSection/CostSection";
 import { capitalize, formatDate } from "../../utils/format";
 
@@ -116,4 +116,42 @@ export const PLACES: SectionConfig<Place> = {
   itemRating: (p) => p.rating,
   itemNote: (p) => p.note,
   removeMessage: (p) => `„${p.name}” (${PLACE_KIND_LABEL[p.kind].toLowerCase()}, ${formatDate(p.visit_date)})`,
+};
+
+export const EXPENSES: SectionConfig<Expense> = {
+  path: "expenses",
+  title: "Wydatki inne",
+  testId: { single: "expense", plural: "expenses" },
+  texts: {
+    add: "Dodaj wydatek",
+    new: "Nowy wydatek",
+    edit: "Edytuj wydatek",
+    remove: "Usuń wydatek",
+    removeTitle: "Usunąć wydatek?",
+    empty: "Nie dodano jeszcze żadnych wydatków.",
+    loading: "Wczytywanie wydatków…",
+    loadError: "Nie udało się wczytać wydatków.",
+    saveError: "Nie udało się zapisać wydatku.",
+    removeError: "Nie udało się usunąć wydatku.",
+  },
+  // Bez oceny; data opcjonalna (np. ubezpieczenie kupione przed wyjazdem)
+  fields: [
+    { name: "description", label: "Opis", kind: "text", testKey: "description", required: true, requiredMessage: "Podaj, na co był wydatek.", maxLength: 255 },
+    {
+      name: "category_id",
+      label: "Kategoria",
+      kind: "select",
+      testKey: "category",
+      required: true,
+      requiredMessage: "Wybierz kategorię.",
+      numeric: true,
+      options: (d) => d.expense_categories.map((c) => ({ value: String(c.id), label: c.name })),
+      fromItem: (e: Expense) => e.category.id,
+    },
+    { name: "expense_date", label: "Data (opcjonalnie)", kind: "date", testKey: "date" },
+    { name: "cost", label: "Kwota (PLN)", kind: "money", testKey: "cost" },
+  ],
+  itemTitle: (e) => e.description,
+  itemMeta: (e) => [e.category.name, e.expense_date ? formatDate(e.expense_date) : "bez daty"],
+  removeMessage: (e) => `„${e.description}” (${e.category.name})`,
 };

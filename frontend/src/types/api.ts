@@ -131,6 +131,17 @@ export interface Place {
   created_at: string;
 }
 
+/** Wydatek inny (bez oceny): GET /api/trips/{id}/expenses */
+export interface Expense {
+  id: number;
+  trip_id: number;
+  category: DictionaryEntry;
+  description: string;
+  expense_date: string | null;
+  cost: number;
+  created_at: string;
+}
+
 /** Dzień albumu: GET /api/trips/{id}/album */
 export interface AlbumDay {
   day: string; // RRRR-MM-DD

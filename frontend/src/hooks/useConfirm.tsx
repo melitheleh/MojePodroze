@@ -25,6 +25,7 @@ export function useConfirm() {
       title={request.title}
       message={request.message}
       confirmLabel={request.confirmLabel}
+      cancelLabel={request.cancelLabel}
       onClose={(confirmed) => {
         request.resolve(confirmed);
         setRequest(null);

@@ -7,6 +7,8 @@ export interface ConfirmOptions {
   message: string;
   /** Napis na przycisku potwierdzenia, np. „Usuń posiłek” */
   confirmLabel: string;
+  /** Napis na przycisku rezygnacji, domyślnie „Anuluj” */
+  cancelLabel?: string;
 }
 
 interface Props extends ConfirmOptions {
@@ -16,7 +18,7 @@ interface Props extends ConfirmOptions {
 
 // Okno potwierdzenia zamiast window.confirm (którego nie da się ostylować).
 // Element <dialog> + showModal(): blokuje stronę pod spodem, trzyma fokus w oknie, Esc = anuluj.
-export default function ConfirmDialog({ title, message, confirmLabel, onClose }: Props) {
+export default function ConfirmDialog({ title, message, confirmLabel, cancelLabel = "Anuluj", onClose }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const idPrefix = useId();
 
@@ -53,7 +55,7 @@ export default function ConfirmDialog({ title, message, confirmLabel, onClose }:
         {message}
       </p>
       <div className={styles.actions}>
-        {/* Fokus startuje na „Anuluj” – Enter nie usunie niczego przez przypadek */}
+        {/* Fokus startuje na rezygnacji – Enter nie usunie niczego przez przypadek */}
         <button
           type="button"
           className={styles.secondary}
@@ -61,7 +63,7 @@ export default function ConfirmDialog({ title, message, confirmLabel, onClose }:
           autoFocus
           data-testid="btn-confirm-cancel"
         >
-          Anuluj
+          {cancelLabel}
         </button>
         <button type="button" className={styles.danger} onClick={() => onClose(true)} data-testid="btn-confirm-ok">
           {confirmLabel}

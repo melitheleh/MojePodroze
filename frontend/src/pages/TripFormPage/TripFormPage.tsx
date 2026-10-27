@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from "react-router";
 import type { Dictionaries, Trip, TripInput, TripType } from "../../types/api";
 import { api, ApiError } from "../../api/client";
 import { capitalize } from "../../utils/format";
+import { useConfirm } from "../../hooks/useConfirm";
 import PhotoUpload from "./PhotoUpload";
 import styles from "./TripFormPage.module.css";
 
@@ -90,6 +91,17 @@ function toValues(trip: Trip): FormValues {
   };
 }
 
+const EMPTY_VALUES: FormValues = {
+  name: "",
+  destination_city: "",
+  destination_country: "",
+  start_date: "",
+  end_date: "",
+  planned_budget: "",
+  trip_type: "foreign",
+  character_id: "",
+};
+
 interface FieldProps {
   id: FieldName;
   label: string;
@@ -123,19 +135,23 @@ export default function TripFormPage() {
   const backTo = editing ? `/podroze/${tripId}` : "/podroze";
   const [dict, setDict] = useState<DictState>({ status: "loading" });
   const [reloadKey, setReloadKey] = useState(0);
-  const [values, setValues] = useState<FormValues>({
-    name: "",
-    destination_city: "",
-    destination_country: "",
-    start_date: "",
-    end_date: "",
-    planned_budget: "",
-    trip_type: "foreign",
-    character_id: "",
-  });
+  const [values, setValues] = useState<FormValues>(EMPTY_VALUES);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  // Wartości zaraz po wczytaniu formularza – porównanie z nimi mówi, czy są niezapisane zmiany
+  const [initialValues, setInitialValues] = useState<FormValues | null>(null);
+  const { confirm, confirmDialog } = useConfirm();
+  const dirty = initialValues !== null && JSON.stringify(values) !== JSON.stringify(initialValues);
+
+  // Odświeżenie lub zamknięcie karty przy niezapisanych zmianach – ostrzeżenie przeglądarki
+  // (tego okna nie da się ostylować; treść ustala przeglądarka)
+  useEffect(() => {
+    if (!dirty) return;
+    const warn = (event: BeforeUnloadEvent) => event.preventDefault();
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [dirty]);
 
   useEffect(() => {
     let cancelled = false;
@@ -148,11 +164,15 @@ export default function TripFormPage() {
         setDict({ status: "ready", data, trip });
         if (trip) {
           setValues(toValues(trip));
+          setInitialValues(toValues(trip));
           return;
         }
         // Domyślny charakter jak w makiecie: „Miasto”
         const city = data.trip_characters.find((c) => c.code === "city") ?? data.trip_characters[0];
-        if (city) setValues((v) => (v.character_id === "" ? { ...v, character_id: String(city.id) } : v));
+        const withCharacter = (v: FormValues) =>
+          city && v.character_id === "" ? { ...v, character_id: String(city.id) } : v;
+        setValues(withCharacter);
+        setInitialValues(withCharacter(EMPTY_VALUES));
       })
       .catch((error: unknown) => {
         if (!cancelled)
@@ -184,6 +204,20 @@ export default function TripFormPage() {
       "aria-describedby": error ? `${field}-error` : undefined,
       "data-testid": testId,
     };
+  }
+
+  // „← Wróć” i „Anuluj”: przy niezapisanych zmianach najpierw pytamy
+  async function leave() {
+    if (dirty) {
+      const confirmed = await confirm({
+        title: "Wyjść bez zapisania?",
+        message: "Zmiany w formularzu nie zostały zapisane i zostaną utracone.",
+        confirmLabel: "Wyjdź bez zapisania",
+        cancelLabel: "Zostań",
+      });
+      if (!confirmed) return;
+    }
+    navigate(backTo);
   }
 
   async function onSubmit(event: FormEvent) {
@@ -222,6 +256,17 @@ export default function TripFormPage() {
 
   return (
     <div className={styles.page}>
+      <Link
+        to={backTo}
+        className={styles.back}
+        onClick={(e) => {
+          e.preventDefault();
+          leave();
+        }}
+        data-testid="link-back"
+      >
+        <span className={styles.backArrow} aria-hidden="true">←</span> {editing ? "Wróć do podróży" : "Moje podróże"}
+      </Link>
       <h1 className={styles.title}>{editing ? "Edytuj podróż" : "Nowa podróż"}</h1>
 
       {dict.status === "loading" ? (
@@ -346,7 +391,7 @@ export default function TripFormPage() {
               <button
                 type="button"
                 className={styles.secondary}
-                onClick={() => navigate(backTo)}
+                onClick={leave}
                 data-testid="btn-cancel-trip"
               >
                 Anuluj
@@ -359,6 +404,7 @@ export default function TripFormPage() {
           {dict.trip && <PhotoUpload tripId={dict.trip.id} day={dict.trip.start_date} />}
         </>
       )}
+      {confirmDialog}
     </div>
   );
 }

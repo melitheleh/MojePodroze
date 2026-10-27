@@ -7,6 +7,44 @@
   gap: 24px;
 }
 
+/* „← Wróć” – jak w szczegółach podróży: przy fokusie jasnozielone tło, strzałka odsuwa się w lewo */
+.back {
+  position: relative;
+  isolation: isolate;
+  align-self: flex-start;
+  color: var(--color-text-muted);
+  text-decoration: none;
+}
+
+.back:hover {
+  color: var(--color-text);
+}
+
+.back:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: none;
+  color: var(--color-text);
+}
+
+.back:focus-visible::before {
+  content: "";
+  position: absolute;
+  inset: -4px -10px;
+  z-index: -1;
+  border-radius: var(--radius-small);
+  background: color-mix(in srgb, var(--focus-ring) 22%, transparent);
+}
+
+.backArrow {
+  display: inline-block;
+  transition: transform 0.2s ease;
+}
+
+.back:hover .backArrow,
+.back:focus-visible .backArrow {
+  transform: translateX(-4px);
+}
+
 .title {
   font-size: 36px;
   font-weight: 500;

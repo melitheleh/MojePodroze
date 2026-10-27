@@ -201,7 +201,7 @@ Zasady przy kodowaniu:
 
 ## Testy (Playwright)
 
-Elementy interaktywne mają `data-testid`, np. `trip-card`, `status-tab-planned`, `status-tab-in-progress`,
+Elementy interaktywne mają `data-testid`, np. `trip-card`, `status-tab-all`, `status-tab-planned`, `status-tab-in-progress`,
 `status-tab-completed`, `status-tab-archived`, `btn-new-trip`, `input-search`, `input-weather-city`,
 `input-convert-amount`, `convert-result`, `widget-next-trip`, `widget-weather`, `widget-nbp`,
 `weather-error`, `weather-retry`, `theme-light`, `theme-dark`, `nav-trips`, `nav-stats`, `btn-logout`,

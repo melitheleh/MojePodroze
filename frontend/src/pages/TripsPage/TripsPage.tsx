@@ -10,14 +10,21 @@ import RatesWidget from "./RatesWidget";
 import { useTabIndicator } from "../../hooks/useTabIndicator";
 import styles from "./TripsPage.module.css";
 
-const TABS: { status: TripStatus; label: string }[] = [
+/** Zakładka: jeden status albo „Wszystkie” */
+type TabKey = TripStatus | "all";
+
+const STATUSES: TripStatus[] = ["planned", "in_progress", "completed", "archived"];
+
+const TABS: { status: TabKey; label: string }[] = [
+  { status: "all", label: "Wszystkie" },
   { status: "planned", label: "W planie" },
   { status: "in_progress", label: "W trakcie" },
   { status: "completed", label: "Zrealizowane" },
   { status: "archived", label: "Archiwum" },
 ];
 
-const EMPTY_TEXT: Record<TripStatus, string> = {
+const EMPTY_TEXT: Record<TabKey, string> = {
+  all: "Nie masz jeszcze żadnych podróży. Dodaj pierwszą przyciskiem „Nowa podróż”.",
   planned: "Nie masz zaplanowanych podróży. Dodaj pierwszą przyciskiem „Nowa podróż”.",
   in_progress: "Żadna podróż nie trwa w tej chwili.",
   completed: "Nie masz jeszcze zrealizowanych podróży.",
@@ -67,7 +74,7 @@ export default function TripsPage() {
       : { trips: { planned: [], in_progress: [], completed: [], archived: [] }, countdown: null };
 
   const navigate = useNavigate();
-  const [active, setActive] = useState<TripStatus>("planned");
+  const [active, setActive] = useState<TabKey>("all");
   const [query, setQuery] = useState("");
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const idPrefix = useId();
@@ -77,7 +84,9 @@ export default function TripsPage() {
   );
 
   const q = query.trim().toLowerCase();
-  const trips = dashboard.trips[active].filter(
+  // „Wszystkie” = grupy z dashboardu po kolei: w planie, w trakcie, zrealizowane, archiwum
+  const tripsFor = (key: TabKey) => (key === "all" ? STATUSES.flatMap((s) => dashboard.trips[s]) : dashboard.trips[key]);
+  const trips = tripsFor(active).filter(
     (t) => !q || t.name.toLowerCase().includes(q) || t.destination_city.toLowerCase().includes(q),
   );
 
@@ -157,7 +166,7 @@ export default function TripsPage() {
                 onKeyDown={(e) => onTabKeyDown(e, index)}
                 data-testid={`status-tab-${tab.status.replace("_", "-")}`}
               >
-                {tab.label} {dashboard.trips[tab.status].length}
+                {tab.label} {tripsFor(tab.status).length}
               </button>
             );
           })}

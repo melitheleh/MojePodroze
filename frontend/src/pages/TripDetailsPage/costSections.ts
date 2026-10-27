@@ -1,8 +1,8 @@
 // Przepisy sekcji kosztowych dla CostSection: pola formularza (zgodne z backend/app/schemas/items.py)
 // i wygląd pozycji na liście. Nowa sekcja = nowy przepis tutaj + gałąź w TripDetailsPage.
-import type { Meal, Transport } from "../../types/api";
+import type { Meal, Place, PlaceKind, Transport } from "../../types/api";
 import type { SectionConfig } from "../../components/CostSection/CostSection";
-import { formatDate } from "../../utils/format";
+import { capitalize, formatDate } from "../../utils/format";
 
 export const MEALS: SectionConfig<Meal> = {
   path: "meals",
@@ -71,4 +71,49 @@ export const TRANSPORTS: SectionConfig<Transport> = {
   itemMeta: (t) => [t.transport_mean.name, formatDate(t.travel_date)],
   itemRating: (t) => t.rating,
   removeMessage: (t) => `Przejazd „${t.route_from} → ${t.route_to}” (${formatDate(t.travel_date)})`,
+};
+
+// Etykiety rodzaju na liście (formularz bierze je ze słownika place_kinds)
+const PLACE_KIND_LABEL: Record<PlaceKind, string> = {
+  accommodation: "Nocleg",
+  attraction: "Atrakcja",
+};
+
+export const PLACES: SectionConfig<Place> = {
+  path: "places",
+  title: "Noclegi i atrakcje",
+  testId: { single: "place", plural: "places" },
+  texts: {
+    add: "Dodaj nocleg lub atrakcję",
+    new: "Nowy nocleg lub atrakcja",
+    edit: "Edytuj nocleg lub atrakcję",
+    remove: "Usuń pozycję",
+    removeTitle: "Usunąć pozycję?",
+    empty: "Nie dodano jeszcze noclegów ani atrakcji.",
+    loading: "Wczytywanie noclegów i atrakcji…",
+    loadError: "Nie udało się wczytać noclegów i atrakcji.",
+    saveError: "Nie udało się zapisać pozycji.",
+    removeError: "Nie udało się usunąć pozycji.",
+  },
+  fields: [
+    { name: "name", label: "Nazwa", kind: "text", testKey: "name", required: true, requiredMessage: "Podaj nazwę miejsca.", maxLength: 150 },
+    {
+      name: "kind",
+      label: "Rodzaj",
+      kind: "select",
+      testKey: "kind",
+      required: true,
+      requiredMessage: "Wybierz rodzaj.",
+      options: (d) => d.place_kinds.map((k) => ({ value: k.value, label: capitalize(k.label) })),
+    },
+    { name: "visit_date", label: "Data", kind: "date", testKey: "date", required: true, requiredMessage: "Podaj datę." },
+    { name: "cost", label: "Koszt (PLN)", kind: "money", testKey: "cost" },
+    { name: "rating", label: "Ocena", kind: "rating", testKey: "rating" },
+    { name: "note", label: "Notatka (opcjonalnie)", kind: "textarea", testKey: "note", maxLength: 2000 },
+  ],
+  itemTitle: (p) => p.name,
+  itemMeta: (p) => [PLACE_KIND_LABEL[p.kind], formatDate(p.visit_date)],
+  itemRating: (p) => p.rating,
+  itemNote: (p) => p.note,
+  removeMessage: (p) => `„${p.name}” (${PLACE_KIND_LABEL[p.kind].toLowerCase()}, ${formatDate(p.visit_date)})`,
 };

@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import type { Dictionaries } from "../../types/api";
 import { api, ApiError } from "../../api/client";
@@ -16,8 +16,9 @@ export interface FieldDef {
   /** Nazwa pola w API, np. "dish", "transport_mean_id" */
   name: string;
   label: string;
-  /** text – tekst, date – data, money – kwota PLN, rating – ocena 1–5 (opcjonalna), select – lista */
-  kind: "text" | "date" | "money" | "rating" | "select";
+  /** text – tekst, textarea – dłuższy tekst (na całą szerokość), date – data, money – kwota PLN,
+      rating – ocena 1–5 (opcjonalna), select – lista */
+  kind: "text" | "textarea" | "date" | "money" | "rating" | "select";
   /** Końcówka data-testid pola: input-{testId sekcji}-{testKey}, np. input-meal-restaurant */
   testKey: string;
   required?: boolean;
@@ -57,6 +58,8 @@ export interface SectionConfig<T extends { id: number; cost: number }> {
   /** Druga linia: części rozdzielone „·” */
   itemMeta: (item: T) => string[];
   itemRating?: (item: T) => number | null;
+  /** Dodatkowy opis pod pozycją, np. notatka */
+  itemNote?: (item: T) => string | null;
   /** Opis pozycji w oknie usuwania, np. „Pierogi” (Bar Mleczny, 12.11.2026) */
   removeMessage: (item: T) => string;
 }
@@ -69,7 +72,8 @@ type LoadState<T> =
   | { status: "ready"; items: T[]; dict: Dictionaries | null }
   | { status: "error"; message: string };
 
-type FormMode<T> = { kind: "closed" } | { kind: "add" } | { kind: "edit"; item: T };
+/** Formularz: zamknięty, nowa pozycja (pusta albo kopia `from`), edycja `item` */
+type FormMode<T> = { kind: "closed" } | { kind: "add"; from?: T } | { kind: "edit"; item: T };
 
 // Kwota jak w backendzie: liczba ≥ 0, najwyżej 2 miejsca po przecinku (przecinek albo kropka)
 const COST_PATTERN = /^\d{1,10}([.,]\d{1,2})?$/;
@@ -168,6 +172,13 @@ export default function CostSection<T extends { id: number; cost: number }>({
   const idPrefix = useId();
   const { confirm, confirmDialog } = useConfirm();
   const listPath = `/trips/${tripId}/${config.path}`;
+  const formRef = useRef<HTMLFormElement>(null);
+
+  // Po otwarciu formularza (dodaj, kopiuj, edytuj) fokus na pierwsze pole – przeglądarka przewinie
+  // do formularza, który jest nad listą
+  useEffect(() => {
+    if (mode.kind !== "closed") formRef.current?.querySelector<HTMLElement>("input, select, textarea")?.focus();
+  }, [mode]);
 
   useEffect(() => {
     let cancelled = false;
@@ -195,9 +206,10 @@ export default function CostSection<T extends { id: number; cost: number }>({
 
   function openForm(next: FormMode<T>) {
     setMode(next);
+    const source = next.kind === "edit" ? next.item : next.kind === "add" ? next.from : undefined;
     setValues(
-      next.kind === "edit"
-        ? toValues(fields, next.item as unknown as Record<string, unknown>)
+      source
+        ? toValues(fields, source as unknown as Record<string, unknown>)
         : emptyValues(fields, defaultDate, dict),
     );
     setFieldErrors({});
@@ -267,7 +279,10 @@ export default function CostSection<T extends { id: number; cost: number }>({
       "data-testid": `${isSelect ? "select" : "input"}-${testId.single}-${field.testKey}`,
     };
     return (
-      <div key={field.name} className={styles.fieldGroup}>
+      <div
+        key={field.name}
+        className={field.kind === "textarea" ? `${styles.fieldGroup} ${styles.wide}` : styles.fieldGroup}
+      >
         <label htmlFor={id} className={styles.label}>
           {field.label}
         </label>
@@ -290,6 +305,13 @@ export default function CostSection<T extends { id: number; cost: number }>({
                 </option>
               ))}
           </select>
+        ) : field.kind === "textarea" ? (
+          <textarea
+            {...common}
+            className={`${styles.field} ${styles.textarea}`}
+            rows={3}
+            onChange={(e) => set(field.name, e.target.value)}
+          />
         ) : (
           <input
             {...common}
@@ -364,7 +386,13 @@ export default function CostSection<T extends { id: number; cost: number }>({
       </div>
 
       {!readOnly && mode.kind !== "closed" && (
-        <form className={styles.form} onSubmit={onSubmit} noValidate data-testid={`${testId.single}-form`}>
+        <form
+          ref={formRef}
+          className={styles.form}
+          onSubmit={onSubmit}
+          noValidate
+          data-testid={`${testId.single}-form`}
+        >
           <h3 className={styles.formTitle}>{mode.kind === "edit" ? texts.edit : texts.new}</h3>
           {formError && (
             <p className={styles.error} role="alert" data-testid={`${testId.single}-form-error`}>
@@ -426,6 +454,7 @@ export default function CostSection<T extends { id: number; cost: number }>({
                       ))}
                     </p>
                     {config.itemRating && <Rating value={config.itemRating(item)} />}
+                    {config.itemNote?.(item) && <p className={styles.itemNote}>{config.itemNote(item)}</p>}
                   </div>
                   <p className={styles.cost}>{formatPln(item.cost)}</p>
                   {!readOnly && (
@@ -438,6 +467,16 @@ export default function CostSection<T extends { id: number; cost: number }>({
                         data-testid={`btn-edit-${testId.single}-${item.id}`}
                       >
                         Edytuj
+                      </button>
+                      {/* Kopia: formularz nowej pozycji z tymi samymi danymi – zapis dopiero po „Dodaj” */}
+                      <button
+                        type="button"
+                        className={styles.small}
+                        onClick={() => openForm({ kind: "add", from: item })}
+                        aria-label={`Kopiuj: ${title}`}
+                        data-testid={`btn-copy-${testId.single}-${item.id}`}
+                      >
+                        Kopiuj
                       </button>
                       <button
                         type="button"

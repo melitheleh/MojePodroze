@@ -235,6 +235,12 @@ transport (ten sam wzór co posiłki – `CostSection`): `transports-section`, `
 `input-transport-cost`, `select-transport-rating`, `btn-save-transport`, `btn-cancel-transport`, `transport-form-error`,
 `error-transport-{pole}` (np. `error-transport-route-from`), `btn-edit-transport-{id}`, `btn-delete-transport-{id}`,
 `transport-delete-error`,
+noclegi i atrakcje (`CostSection`, prefiks `place`/`places`): `places-section`, `places-loading`, `places-error`,
+`places-retry`, `places-empty`, `place-list`, `place-{id}`, `places-total`, `btn-add-place`, `place-form`,
+`input-place-name`, `select-place-kind`, `input-place-date`, `input-place-cost`, `select-place-rating`,
+`input-place-note`, `btn-save-place`, `btn-cancel-place`, `place-form-error`, `error-place-{pole}`
+(np. `error-place-visit-date`), `btn-edit-place-{id}`, `btn-delete-place-{id}`, `place-delete-error`,
+`btn-copy-{prefiks}-{id}` w każdej sekcji kosztowej (np. `btn-copy-meal-3`, `btn-copy-place-7`) – kopia pozycji do formularza,
 `confirm-dialog` (okno potwierdzenia usunięcia, zamiast `window.confirm`), `btn-confirm-ok`, `btn-confirm-cancel`.
 
 ## Do dopilnowania

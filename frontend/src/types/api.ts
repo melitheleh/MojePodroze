@@ -118,6 +118,19 @@ export interface Transport {
   created_at: string;
 }
 
+/** Nocleg lub atrakcja: GET /api/trips/{id}/places */
+export interface Place {
+  id: number;
+  trip_id: number;
+  name: string;
+  kind: PlaceKind;
+  visit_date: string;
+  cost: number;
+  rating: number | null;
+  note: string | null;
+  created_at: string;
+}
+
 export interface WeatherCity {
   name: string;
   country: string | null;

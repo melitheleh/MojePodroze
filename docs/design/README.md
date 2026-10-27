@@ -146,7 +146,10 @@ Przycisk główny w obu trybach: tło `--color-accent` (#5f7a6c), biały tekst.
 - Po najechaniu karta lekko się unosi (cień `--shadow-card-hover`, przesunięcie 2 px).
 - Na okładce karty, w prawym dolnym rogu: okrągła strzałka (tło białe, krycie 75%), skierowana ↗;
   po najechaniu lub z fokusem obraca się do →. Widoczna zawsze – sygnał, że karta jest klikalna.
-- Mobile: jedna kolumna, zakładki przewijane w poziomie (z „Archiwum”), kafel „Najbliższa podróż” nad listą.
+- Mobile (do 640 px): nagłówek z logo i przyciskiem ☰ (menu rozwijane), zakładki statusów jako „pigułki”
+  zawijane do nowej linii (aktywna – tło szałwii), kafel „Najbliższa podróż” nad listą.
+- Telefon i wąski tablet (do 880 px): pasek na dole „Moich podróży” – Szukaj (panel z polem nad paskiem),
+  Nowa podróż, Pogoda i Kursy NBP (panel wysuwany od dołu); wyszukiwarka i widżety znikają z listy.
 
 ## Dostępność – WCAG 2.0, poziom AA
 
@@ -274,6 +277,11 @@ kosztorys: `cost-summary`, `cost-summary-loading`, `cost-summary-error`, `cost-s
 `cost-sections`, `cost-section-{sekcja}` (np. `cost-section-meals`), `recommendations`, `recommendations-loading`,
 `recommendations-error`, `recommendations-retry`, `recommendations-empty`, `recommendations-none`,
 `rec-previous-trip-{id}`, `rec-restaurant-{n}`, `rec-place-{n}`, `rec-wish-{n}`,
+statystyki: `stats`, `stats-loading`, `stats-error`, `stats-retry`, `stats-empty`, `stats-trips-count`,
+`stats-total-cost`, `stats-average-trip`, `stats-average-daily`, `stats-years`, `stats-year-{rok}`, `stats-character`,
+`stats-character-table`, `stats-character-{nazwa}` (wiersz tabeli, np. `stats-character-Miasto`),
+telefon/tablet: `btn-menu` (☰ w nagłówku, `aria-expanded`), pasek na dole „Moich podróży”: `btn-sheet-search`,
+`btn-sheet-new-trip`, `btn-sheet-weather`, `btn-sheet-rates`; panel widżetów `widget-sheet`, `btn-sheet-close`,
 `btn-copy-{prefiks}-{id}` w każdej sekcji kosztowej (np. `btn-copy-meal-3`, `btn-copy-place-7`) – kopia pozycji do formularza,
 album w zakładce „Przegląd”: `trip-album`, `album-loading`, `album-error`, `album-retry`, `album-empty`,
 `link-add-photos`, `album-day-{RRRR-MM-DD}`, `album-photo-{id}` (miniatura – otwiera podgląd), `photo-viewer`,

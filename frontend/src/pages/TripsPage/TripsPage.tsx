@@ -75,6 +75,40 @@ export default function TripsPage() {
 
   const navigate = useNavigate();
   const [active, setActive] = useState<TabKey>("all");
+  // Telefon/tablet: wyszukiwarka, pogoda i kursy w panelach wysuwanych od dołu, otwieranych z paska na dole
+  // (na komputerze – wyszukiwarka nad listą, widżety w kolumnie)
+  type Sheet = "search" | "weather" | "rates";
+  const [sheet, setSheet] = useState<Sheet | null>(null);
+  const sheetCloseRef = useRef<HTMLButtonElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  // Panel widżetów tylko dla pogody i kursów (wyszukiwarka ma własny panel)
+  const widgetSheetOpen = sheet === "weather" || sheet === "rates";
+
+  function openSheet(which: Sheet) {
+    setSheet((current) => (current === which ? null : which));
+  }
+
+  function closeSheet() {
+    const which = sheet;
+    setSheet(null);
+    if (which) document.getElementById(`sheet-button-${which}`)?.focus();
+  }
+
+  // Po otwarciu panelu fokus na pole wyszukiwania albo „Zamknij”, Esc zamyka panel
+  useEffect(() => {
+    if (!sheet) return;
+    if (sheet === "search") searchRef.current?.focus();
+    else sheetCloseRef.current?.focus();
+    const onKey = (e: globalThis.KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setSheet(null);
+        document.getElementById(`sheet-button-${sheet}`)?.focus();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [sheet]);
   const [query, setQuery] = useState("");
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const idPrefix = useId();
@@ -111,11 +145,12 @@ export default function TripsPage() {
         </h1>
 
         <div className={styles.toolbar}>
-          <div className={styles.search}>
+          <div className={sheet === "search" ? `${styles.search} ${styles.searchOpen}` : styles.search}>
             <label htmlFor={`${idPrefix}-search`} className={styles.label}>
               Szukaj podróży
             </label>
             <input
+              ref={searchRef}
               id={`${idPrefix}-search`}
               type="search"
               className={styles.field}
@@ -204,9 +239,104 @@ export default function TripsPage() {
         <div className={styles.nextTrip}>
           <NextTripWidget countdown={dashboard.countdown} />
         </div>
-        <WeatherWidget />
-        <RatesWidget />
+        {/* Na komputerze „display: contents” – widżety stoją w kolumnie; na telefonie panel od dołu */}
+        <div
+          id="widget-sheet"
+          className={widgetSheetOpen ? `${styles.sheet} ${styles.sheetOpen}` : styles.sheet}
+          data-testid="widget-sheet"
+        >
+          <div className={styles.sheetHead}>
+            <span className={styles.sheetHandle} aria-hidden="true" />
+            <button
+              ref={sheetCloseRef}
+              type="button"
+              className={styles.sheetClose}
+              onClick={closeSheet}
+              data-testid="btn-sheet-close"
+            >
+              Zamknij
+            </button>
+          </div>
+          <div className={sheet === "rates" ? styles.mobileHidden : undefined}>
+            <WeatherWidget />
+          </div>
+          <div className={sheet === "weather" ? styles.mobileHidden : undefined}>
+            <RatesWidget />
+          </div>
+        </div>
+        {/* Tło tylko pod widżetami – przy wyszukiwaniu lista ma być widoczna */}
+        {widgetSheetOpen && (
+          <div className={styles.backdrop} onClick={closeSheet} aria-hidden="true" />
+        )}
       </aside>
+
+      {/* Pasek na dole ekranu (tylko telefon/tablet): wyszukiwarka, nowa podróż, pogoda, kursy */}
+      <nav className={styles.bottomBar} aria-label="Akcje">
+        <button
+          id="sheet-button-search"
+          type="button"
+          className={sheet === "search" ? `${styles.barButton} ${styles.barButtonActive}` : styles.barButton}
+          onClick={() => openSheet("search")}
+          aria-expanded={sheet === "search"}
+          data-testid="btn-sheet-search"
+        >
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+            <circle cx="11" cy="11" r="6.5" />
+            <path d="M16 16l4.5 4.5" strokeLinecap="round" />
+          </svg>
+          <span>
+            Szukaj
+            {/* Kropka: lista jest teraz przefiltrowana */}
+            {q && (
+              <>
+                <span className={styles.barDot} aria-hidden="true" />
+                <span className="visually-hidden"> (filtr: {query.trim()})</span>
+              </>
+            )}
+          </span>
+        </button>
+        <button
+          type="button"
+          className={`${styles.barButton} ${styles.barButtonPrimary}`}
+          onClick={() => navigate("/podroze/nowa")}
+          data-testid="btn-sheet-new-trip"
+        >
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+            <path d="M12 5v14M5 12h14" strokeLinecap="round" />
+          </svg>
+          Nowa podróż
+        </button>
+        <button
+          id="sheet-button-weather"
+          type="button"
+          className={sheet === "weather" ? `${styles.barButton} ${styles.barButtonActive}` : styles.barButton}
+          onClick={() => openSheet("weather")}
+          aria-expanded={sheet === "weather"}
+          aria-controls="widget-sheet"
+          data-testid="btn-sheet-weather"
+        >
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+            <circle cx="9" cy="9" r="3.5" />
+            <path d="M9 2.5v1.5M3.5 9H2M4.4 4.4l1 1M13.6 4.4l-1 1" strokeLinecap="round" />
+            <path d="M8 20h9a3.5 3.5 0 0 0 0-7 5 5 0 0 0-9.5 1.5A3 3 0 0 0 8 20z" strokeLinejoin="round" />
+          </svg>
+          Pogoda
+        </button>
+        <button
+          id="sheet-button-rates"
+          type="button"
+          className={sheet === "rates" ? `${styles.barButton} ${styles.barButtonActive}` : styles.barButton}
+          onClick={() => openSheet("rates")}
+          aria-expanded={sheet === "rates"}
+          aria-controls="widget-sheet"
+          data-testid="btn-sheet-rates"
+        >
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+            <path d="M4 8h13l-3-3M20 16H7l3 3" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Kursy NBP
+        </button>
+      </nav>
     </div>
   );
 }

@@ -347,6 +347,267 @@
   }
 }
 
+/* „Najbliższa podróż” wyróżniona ciepłym tłem w kolorze swojej kreski (w trybie ciemnym – przygaszony grafit);
+   kreska tytułu ciemniejsza, żeby nie ginęła na tle */
+.nextTripWidget {
+  /* 32%: #fbe8c4 – tekst 11,3 : 1, opis 4,6 : 1 */
+  background: color-mix(in srgb, var(--widget-next-trip) 32%, var(--color-surface));
+}
+
+/* Tryb ciemny: słabsze zabarwienie – opis #a7b3ac zostaje ≥ 4,5 : 1 (przy 20% byłoby 4,3 : 1) */
+:global([data-theme="dark"]) .nextTripWidget {
+  background: color-mix(in srgb, var(--widget-next-trip) 14%, var(--color-surface));
+}
+
+.nextTripWidget h2 {
+  border-bottom-color: var(--color-warning-bar) !important;
+}
+
+/* Panel widżetów: na komputerze niewidoczny „opakowanie” (widżety w kolumnie), pasek na dole ukryty */
+.sheet {
+  display: contents;
+}
+
+.sheetHead,
+.bottomBar,
+.backdrop {
+  display: none;
+}
+
+/* Telefon i wąski tablet: pogoda i kursy w panelu wysuwanym od dołu, otwieranym z paska na dole */
+@media (max-width: 880px) {
+  /* miejsce na pasek, żeby nie zasłaniał ostatniej karty */
+  .page {
+    padding-bottom: 72px;
+  }
+
+  .sheet {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 82vh;
+    overflow-y: auto;
+    padding: 10px 16px calc(84px + env(safe-area-inset-bottom));
+    border-radius: var(--radius-card) var(--radius-card) 0 0;
+    background: var(--color-bg);
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.18);
+    /* zamknięty: poza ekranem i niedostępny dla Tab / czytników */
+    transform: translateY(100%);
+    visibility: hidden;
+    transition:
+      transform 0.25s ease,
+      visibility 0s linear 0.25s;
+  }
+
+  .sheetOpen {
+    transform: none;
+    visibility: visible;
+    transition: transform 0.25s ease;
+  }
+
+  .sheetHead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  /* „Uchwyt” panelu – tylko ozdoba */
+  .sheetHandle {
+    width: 40px;
+    height: 4px;
+    margin-left: calc(50% - 20px);
+    border-radius: 2px;
+    background: var(--color-field-line);
+  }
+
+  .sheetClose {
+    height: 36px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: var(--radius-small);
+    background: none;
+    color: var(--color-text);
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .sheetClose:hover {
+    background: var(--color-divider);
+  }
+
+  .mobileHidden {
+    display: none;
+  }
+
+  .backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    background: rgba(24, 32, 28, 0.35);
+  }
+
+  /* Pasek na dole: dwa przyciski z ikoną i napisem */
+  .bottomBar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 40;
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--color-divider);
+    background: var(--color-surface);
+  }
+
+  .barButton {
+    flex: 1 1 0;
+    max-width: 160px;
+    min-width: 0;
+    height: 52px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    border: 0;
+    border-radius: var(--radius-small);
+    background: none;
+    color: var(--color-text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  .barButton:hover {
+    color: var(--color-text);
+  }
+
+  /* „Nowa podróż” – główna akcja: szałwia jak przycisk główny */
+  .barButtonPrimary {
+    background: var(--color-accent);
+    color: var(--color-text-on-accent);
+  }
+
+  .barButtonPrimary:hover,
+  .barButtonPrimary:focus-visible {
+    background: var(--color-accent-hover);
+    color: var(--color-text-on-accent);
+  }
+
+  .barDot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-left: 4px;
+    vertical-align: 2px;
+    border-radius: 50%;
+    background: var(--color-accent);
+  }
+
+  /* Pasek nad listą znika – „Nowa podróż” jest w pasku na dole, wyszukiwarka w panelu */
+  .toolbar {
+    display: contents;
+  }
+
+  .toolbar > .primary {
+    display: none;
+  }
+
+  /* Wyszukiwarka: panel tuż nad paskiem na dole; lista podróży zostaje widoczna nad nim */
+  .search {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: calc(69px + env(safe-area-inset-bottom));
+    z-index: 35;
+    padding: 14px 16px 16px;
+    border-top: 1px solid var(--color-divider);
+    background: var(--color-surface);
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.12);
+    transform: translateY(calc(100% + 70px));
+    visibility: hidden;
+    transition:
+      transform 0.25s ease,
+      visibility 0s linear 0.25s;
+  }
+
+  .searchOpen {
+    transform: none;
+    visibility: visible;
+    transition: transform 0.25s ease;
+  }
+
+  /* Otwarty panel: przycisk w jasnozielonym tle (stan także w aria-expanded) */
+  .barButtonActive {
+    background: color-mix(in srgb, var(--focus-ring) 22%, transparent);
+    color: var(--color-text);
+  }
+}
+
+/* Telefon: zakładki jako „pigułki” zawijane do nowej linii – bez przewijania w poziomie.
+   Aktywna: tło szałwii i biały tekst (4,7 : 1); kreska zakładek znika. */
+@media (max-width: 640px) {
+  .tabs {
+    flex-wrap: wrap;
+    gap: 8px;
+    overflow: visible;
+    padding: 0;
+    margin: 0;
+  }
+
+  .tabIndicator {
+    display: none;
+  }
+
+  .tab {
+    height: 38px;
+    padding: 0 14px;
+    border: 1px solid var(--color-field-line);
+    border-radius: 999px;
+    color: var(--color-text);
+    transition:
+      background-color 0.15s ease,
+      color 0.15s ease;
+  }
+
+  .tab:hover {
+    background: var(--color-divider);
+  }
+
+  .tabActive,
+  .tabActive:hover {
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+    color: var(--color-text-on-accent);
+  }
+
+  /* Fokus jak na przyciskach: obwódka 1 px + poświata (pigułki się nie przewijają, więc nic jej nie przytnie) */
+  .tab:focus-visible {
+    border-radius: 999px;
+    box-shadow:
+      0 0 0 1px var(--focus-ring),
+      0 0 14px 4px color-mix(in srgb, var(--focus-ring) 60%, transparent);
+  }
+
+  .tab:focus-visible::before {
+    display: none;
+  }
+
+  .tabActive:focus-visible {
+    background: var(--color-accent-hover);
+    color: var(--color-text-on-accent);
+  }
+}
+
 /* Błąd wczytywania listy */
 .error {
   padding: 24px;

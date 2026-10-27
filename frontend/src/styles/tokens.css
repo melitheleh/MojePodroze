@@ -42,8 +42,9 @@
   --radius-card: 16px;
   --radius-button: 12px;
   --radius-small: 10px;
-  --shadow-card: 0 1px 3px rgba(39, 48, 44, 0.05), 0 8px 24px rgba(39, 48, 44, 0.07);
-  --shadow-card-hover: 0 2px 4px rgba(39, 48, 44, 0.05), 0 14px 32px rgba(39, 48, 44, 0.1);
+  /* karta: cienka szara ramka (cień 1 px bez rozmycia – nie zmienia wymiarów) + słaby, neutralny cień */
+  --shadow-card: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-card-hover: 0 0 0 1px rgba(0, 0, 0, 0.1), 0 8px 20px rgba(0, 0, 0, 0.07);
 
   --focus-ring: #5f7a6c;
 
@@ -63,8 +64,9 @@
   --status-planned: #7b9bf5;
   --widget-weather: #7b9bf5;
   --focus-ring: #9fb8a6;
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.25);
-  --shadow-card-hover: 0 2px 4px rgba(0, 0, 0, 0.35), 0 14px 32px rgba(0, 0, 0, 0.35);
+  /* jasna ramka 1 px – na ciemnym tle cień słabo widać */
+  --shadow-card: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-card-hover: 0 0 0 1px rgba(255, 255, 255, 0.12), 0 8px 20px rgba(0, 0, 0, 0.4);
 
   --color-highlight-bg: #3a2a33;
   --color-highlight-border: rgba(242, 201, 220, 0.35);

@@ -32,7 +32,7 @@
   place-items: center;
   background: color-mix(in srgb, var(--color-surface) 75%, transparent);
   color: var(--color-text);
-  box-shadow: 0 2px 8px rgba(39, 48, 44, 0.18);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
 }
 
 /* Strzałka wskazuje ukośnie w górę i w prawo (↗) */

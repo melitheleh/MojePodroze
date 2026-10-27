@@ -85,8 +85,9 @@ frontend/src/
   --radius-card: 16px;                   /* karty, widżety */
   --radius-button: 12px;                 /* przyciski */
   --radius-small: 10px;                  /* małe przyciski, pozycje menu */
-  --shadow-card: 0 1px 3px rgba(39, 48, 44, 0.05), 0 8px 24px rgba(39, 48, 44, 0.07);
-  --shadow-card-hover: 0 2px 4px rgba(39, 48, 44, 0.05), 0 14px 32px rgba(39, 48, 44, 0.10);
+  /* karta: cienka szara ramka (cień 1 px bez rozmycia) + słaby, neutralny cień */
+  --shadow-card: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-card-hover: 0 0 0 1px rgba(0, 0, 0, 0.1), 0 8px 20px rgba(0, 0, 0, 0.07);
 
   /* fokus */
   --focus-ring: #5f7a6c;
@@ -108,8 +109,8 @@ frontend/src/
   --status-planned: #7b9bf5;             /* jaśniejszy niebieski na ciemnym tle */
   --widget-weather: #7b9bf5;
   --focus-ring: #9fb8a6;
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.25);
-  --shadow-card-hover: 0 2px 4px rgba(0, 0, 0, 0.35), 0 14px 32px rgba(0, 0, 0, 0.35);
+  --shadow-card: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-card-hover: 0 0 0 1px rgba(255, 255, 255, 0.12), 0 8px 20px rgba(0, 0, 0, 0.4);
 
   /* przygaszony róż – tylko wyróżnienie aktywnej opcji / propozycji */
   --color-highlight-bg: #3a2a33;
@@ -143,6 +144,7 @@ Przycisk główny w obu trybach: tło `--color-accent` (#5f7a6c), biały tekst.
 - Zdjęcie okładki wyłania się płynnie z koloru zastępczego (0,35 s); strzałka „←” w „Moje podróże”
   odsuwa się w lewo po najechaniu.
 - Animacje są krótkie (0,15–0,35 s) i wyłączane przy `prefers-reduced-motion` (global.css).
+- Karty i widżety: cienka szara ramka 1 px + słaby, neutralny cień (bez zielonkawego ani ciepłego odcienia).
 - Po najechaniu karta lekko się unosi (cień `--shadow-card-hover`, przesunięcie 2 px).
 - Na okładce karty, w prawym dolnym rogu: okrągła strzałka (tło białe, krycie 75%), skierowana ↗;
   po najechaniu lub z fokusem obraca się do →. Widoczna zawsze – sygnał, że karta jest klikalna.

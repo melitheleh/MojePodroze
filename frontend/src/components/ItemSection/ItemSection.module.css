@@ -176,6 +176,15 @@
   white-space: pre-line;
 }
 
+/* Główna treść pozycji (wpis pamiętnika): czytelny tekst z zachowanymi akapitami */
+.itemBody {
+  font-size: 16px;
+  line-height: 1.65;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  max-width: 70ch;
+}
+
 /* Gwiazdki w kolorze tekstu – ocena czytelna także bez koloru */
 .rating {
   font-size: 15px;

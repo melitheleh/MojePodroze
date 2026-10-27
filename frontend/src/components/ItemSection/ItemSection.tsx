@@ -26,6 +26,8 @@ export interface FieldDef {
   requiredMessage?: string;
   maxLength?: number;
   minLength?: number;
+  /** Wysokość pola textarea w wierszach (domyślnie 3) */
+  rows?: number;
   /** Data bez ograniczenia do terminu podróży (np. wydatek przed wyjazdem) */
   anyDate?: boolean;
   /** Lista wyboru ze słownika (GET /api/dictionaries) */
@@ -63,13 +65,15 @@ export interface SectionConfig<T extends Item> {
   validate?: (values: Record<string, string>) => Record<string, string>;
   /** Zakres w kalendarzu zależny od innych pól (np. przylot: od wylotu do wylotu + 48 h) */
   limits?: (values: Record<string, string>) => Record<string, { min?: string; max?: string }>;
-  /** Pierwsza linia pozycji (pogrubiona) */
+  /** Pierwsza linia pozycji (pogrubiona); pusty tekst = bez tytułu */
   itemTitle: (item: T) => string;
-  /** Druga linia: części rozdzielone „·” */
+  /** Druga linia: części rozdzielone „·” (pusta lista = bez tej linii) */
   itemMeta: (item: T) => string[];
   itemRating?: (item: T) => number | null;
   /** Dodatkowy opis pod pozycją, np. notatka */
   itemNote?: (item: T) => string | null;
+  /** Opis to główna treść (np. wpis pamiętnika) – zwykły tekst zamiast małego szarego */
+  noteIsBody?: boolean;
   /** Opis pozycji w oknie usuwania, np. „Pierogi” (Bar Mleczny, 12.11.2026) */
   removeMessage: (item: T) => string;
   /** Lista pogrupowana według dni (np. plan dnia): dzień pozycji RRRR-MM-DD */
@@ -361,7 +365,7 @@ export default function ItemSection<T extends Item>({
           <textarea
             {...common}
             className={`${styles.field} ${styles.textarea}`}
-            rows={3}
+            rows={field.rows ?? 3}
             onChange={(e) => set(field.name, e.target.value)}
           />
         ) : (
@@ -428,25 +432,32 @@ export default function ItemSection<T extends Item>({
 
   function renderItem(item: T) {
     const title = config.itemTitle(item);
+    const meta = config.itemMeta(item);
+    // Nazwa pozycji dla przycisków (czytniki ekranu) – gdy brak tytułu (np. wpis pamiętnika), opis z okna usuwania
+    const label = title || config.removeMessage(item);
     return (
       <li key={item.id} className={styles.item} data-testid={`${testId.single}-${item.id}`}>
         <div className={styles.itemText}>
-          <p className={styles.itemTitle}>{title}</p>
-          <p className={styles.itemMeta}>
-            {config.itemMeta(item).map((part, index) => (
-              <span key={index}>
-                {index > 0 && (
-                  <>
-                    <span aria-hidden="true"> · </span>
-                    <span className="visually-hidden">, </span>
-                  </>
-                )}
-                {part}
-              </span>
-            ))}
-          </p>
+          {title && <p className={styles.itemTitle}>{title}</p>}
+          {meta.length > 0 && (
+            <p className={styles.itemMeta}>
+              {meta.map((part, index) => (
+                <span key={index}>
+                  {index > 0 && (
+                    <>
+                      <span aria-hidden="true"> · </span>
+                      <span className="visually-hidden">, </span>
+                    </>
+                  )}
+                  {part}
+                </span>
+              ))}
+            </p>
+          )}
           {config.itemRating && <Rating value={config.itemRating(item)} />}
-          {config.itemNote?.(item) && <p className={styles.itemNote}>{config.itemNote(item)}</p>}
+          {config.itemNote?.(item) && (
+            <p className={config.noteIsBody ? styles.itemBody : styles.itemNote}>{config.itemNote(item)}</p>
+          )}
         </div>
         {hasCost && <p className={styles.cost}>{formatPln(item.cost ?? 0)}</p>}
         {!readOnly && (
@@ -455,7 +466,7 @@ export default function ItemSection<T extends Item>({
               type="button"
               className={styles.small}
               onClick={() => openForm({ kind: "edit", item })}
-              aria-label={`${texts.edit}: ${title}`}
+              aria-label={`${texts.edit}: ${label}`}
               data-testid={`btn-edit-${testId.single}-${item.id}`}
             >
               Edytuj
@@ -465,7 +476,7 @@ export default function ItemSection<T extends Item>({
               type="button"
               className={styles.small}
               onClick={() => openForm({ kind: "add", from: item })}
-              aria-label={`Kopiuj: ${title}`}
+              aria-label={`Kopiuj: ${label}`}
               data-testid={`btn-copy-${testId.single}-${item.id}`}
             >
               Kopiuj
@@ -475,7 +486,7 @@ export default function ItemSection<T extends Item>({
               className={styles.danger}
               onClick={() => deleteItem(item)}
               disabled={deletingId === item.id}
-              aria-label={`${texts.remove}: ${title}`}
+              aria-label={`${texts.remove}: ${label}`}
               data-testid={`btn-delete-${testId.single}-${item.id}`}
             >
               Usuń

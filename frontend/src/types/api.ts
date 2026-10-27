@@ -141,6 +141,17 @@ export interface PlanPoint {
   description: string | null;
 }
 
+/** Wpis pamiętnika: GET /api/trips/{id}/diary-entries (posortowane po dacie) */
+export interface DiaryEntry {
+  id: number;
+  trip_id: number;
+  entry_date: string;
+  title: string | null;
+  content: string;
+  created_at: string;
+  updated_at: string;
+}
+
 /** Lot (tylko podróż zagraniczna): GET /api/trips/{id}/flights; daty z godziną bez strefy */
 export interface Flight {
   id: number;

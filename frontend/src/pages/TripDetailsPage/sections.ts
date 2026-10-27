@@ -1,6 +1,6 @@
 // Przepisy sekcji dla ItemSection: pola formularza (zgodne z backend/app/schemas/items.py i planning.py)
 // i wygląd pozycji na liście. Nowa sekcja = nowy przepis tutaj + gałąź w TripDetailsPage.
-import type { Expense, Flight, Meal, PlaceKind, Place, PlanPoint, Transport } from "../../types/api";
+import type { DiaryEntry, Expense, Flight, Meal, PlaceKind, Place, PlanPoint, Transport } from "../../types/api";
 import type { SectionConfig } from "../../components/ItemSection/ItemSection";
 import type { ChecklistConfig } from "../../components/ChecklistSection/ChecklistSection";
 import { capitalize, formatDate, formatDateTime } from "../../utils/format";
@@ -247,6 +247,36 @@ export const PLAN: SectionConfig<PlanPoint> = {
   itemNote: (p) => p.description,
   removeMessage: (p) => `„${p.place}” (${formatDate(p.day)})`,
   groupByDay: (p) => p.day,
+};
+
+// Pamiętnik – wpisy według dni; tytuł opcjonalny, treść z zachowanymi akapitami
+export const DIARY: SectionConfig<DiaryEntry> = {
+  path: "diary-entries",
+  title: "Pamiętnik",
+  testId: { single: "diary-entry", plural: "diary-entries" },
+  texts: {
+    add: "Dodaj wpis",
+    new: "Nowy wpis",
+    edit: "Edytuj wpis",
+    remove: "Usuń wpis",
+    removeTitle: "Usunąć wpis?",
+    empty: "Pamiętnik jest pusty. Zapisz pierwsze wrażenia z podróży.",
+    loading: "Wczytywanie pamiętnika…",
+    loadError: "Nie udało się wczytać pamiętnika.",
+    saveError: "Nie udało się zapisać wpisu.",
+    removeError: "Nie udało się usunąć wpisu.",
+  },
+  fields: [
+    { name: "entry_date", label: "Dzień", kind: "date", testKey: "date", required: true, requiredMessage: "Wybierz dzień." },
+    { name: "title", label: "Tytuł (opcjonalnie)", kind: "text", testKey: "title", maxLength: 150 },
+    { name: "content", label: "Treść", kind: "textarea", testKey: "content", required: true, requiredMessage: "Napisz treść wpisu.", maxLength: 10000, rows: 8 },
+  ],
+  itemTitle: (e) => e.title ?? "",
+  itemMeta: () => [],
+  itemNote: (e) => e.content,
+  noteIsBody: true,
+  removeMessage: (e) => (e.title ? `Wpis „${e.title}” (${formatDate(e.entry_date)})` : `Wpis z ${formatDate(e.entry_date)}`),
+  groupByDay: (e) => e.entry_date,
 };
 
 // Listy do odhaczania (ChecklistSection); „Zaliczone: 2 z 5” – bez odmiany liczebników

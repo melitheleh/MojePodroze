@@ -135,6 +135,12 @@ export const TRANSPORTS: SectionConfig<Transport> = {
   removeMessage: (t) => `Przejazd „${t.route_from} → ${t.route_to}” (${formatDate(t.travel_date)})`,
 };
 
+/** "2026-09-21" + 1 → "2026-09-22" */
+function addDays(iso: string, days: number): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
+}
+
 // Etykiety rodzaju na liście (formularz bierze je ze słownika place_kinds)
 const PLACE_KIND_LABEL: Record<PlaceKind, string> = {
   accommodation: "Nocleg",
@@ -173,6 +179,17 @@ export const PLACES: SectionConfig<Place> = {
     { name: "rating", label: "Ocena", kind: "rating", testKey: "rating" },
     { name: "note", label: "Notatka (opcjonalnie)", kind: "textarea", testKey: "note", maxLength: 2000 },
   ],
+  // Jeden nocleg na noc (atrakcji może być kilka) – tylko we frontendzie, backend tego nie sprawdza
+  validate: (v, items, editingId) => {
+    const errors: Record<string, string> = {};
+    if (v.kind !== "accommodation" || !v.visit_date) return errors;
+    const taken = items.find((p) => p.kind === "accommodation" && p.visit_date === v.visit_date && p.id !== editingId);
+    if (taken)
+      errors.visit_date = `Na ${formatDate(v.visit_date)} jest już nocleg „${taken.name}”. Wybierz inny dzień albo edytuj tamten nocleg.`;
+    return errors;
+  },
+  // Kopia noclegu = zwykle kolejna noc w tym samym miejscu
+  copyValues: (v) => (v.kind === "accommodation" && v.visit_date ? { ...v, visit_date: addDays(v.visit_date, 1) } : v),
   itemTitle: (p) => p.name,
   itemMeta: (p) => [PLACE_KIND_LABEL[p.kind], formatDate(p.visit_date)],
   itemRating: (p) => p.rating,

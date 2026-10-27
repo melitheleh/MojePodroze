@@ -61,8 +61,11 @@ export interface SectionConfig<T extends Item> {
     removeError: string;
   };
   fields: FieldDef[];
-  /** Reguły obejmujące kilka pól (np. przylot nie wcześniej niż wylot) – błędy przy polach */
-  validate?: (values: Record<string, string>) => Record<string, string>;
+  /** Reguły obejmujące kilka pól albo inne pozycje (np. przylot nie wcześniej niż wylot, jeden nocleg na noc)
+      – błędy przy polach; `editingId` = id edytowanej pozycji (pomijana przy porównaniu), null przy dodawaniu */
+  validate?: (values: Record<string, string>, items: T[], editingId: number | null) => Record<string, string>;
+  /** Zmiana wartości przy „Kopiuj” (np. nocleg → następny dzień) */
+  copyValues?: (values: Record<string, string>) => Record<string, string>;
   /** Zakres w kalendarzu zależny od innych pól (np. przylot: od wylotu do wylotu + 48 h) */
   limits?: (values: Record<string, string>) => Record<string, { min?: string; max?: string }>;
   /** Pierwsza linia pozycji (pogrubiona); pusty tekst = bez tytułu */
@@ -262,19 +265,23 @@ export default function ItemSection<T extends Item>({
 
   function openForm(next: FormMode<T>) {
     setMode(next);
-    const source = next.kind === "edit" ? next.item : next.kind === "add" ? next.from : undefined;
-    setValues(
-      source
-        ? toValues(fields, source as unknown as Record<string, unknown>)
-        : emptyValues(fields, defaultDate, dict),
-    );
+    if (next.kind === "edit") setValues(toValues(fields, next.item as unknown as Record<string, unknown>));
+    else if (next.kind === "add" && next.from) {
+      const copied = toValues(fields, next.from as unknown as Record<string, unknown>);
+      setValues(config.copyValues ? config.copyValues(copied) : copied);
+    } else setValues(emptyValues(fields, defaultDate, dict));
     setFieldErrors({});
     setFormError(null);
   }
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
-    const errors = { ...config.validate?.(values), ...validate(fields, values, startDate, endDate) };
+    const items = load.status === "ready" ? load.items : [];
+    const editingId = mode.kind === "edit" ? mode.item.id : null;
+    const errors = {
+      ...config.validate?.(values, items, editingId),
+      ...validate(fields, values, startDate, endDate),
+    };
     setFieldErrors(errors);
     setFormError(null);
     if (Object.keys(errors).length > 0) {

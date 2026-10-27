@@ -8,7 +8,8 @@ import StatusLabel from "../../components/StatusLabel/StatusLabel";
 import TripCover from "../../components/TripCard/TripCover";
 import { useTabIndicator } from "../../hooks/useTabIndicator";
 import { useConfirm } from "../../hooks/useConfirm";
-import MealsSection from "./MealsSection";
+import CostSection from "../../components/CostSection/CostSection";
+import { MEALS, TRANSPORTS } from "./costSections";
 import styles from "./TripDetailsPage.module.css";
 
 interface Tab {
@@ -332,7 +333,9 @@ export default function TripDetailsPage() {
             </div>
           </dl>
         ) : activeTab.key === "posilki" ? (
-          <MealsSection tripId={trip.id} readOnly={trip.is_read_only} defaultDate={trip.start_date} />
+          <CostSection config={MEALS} tripId={trip.id} readOnly={trip.is_read_only} defaultDate={trip.start_date} />
+        ) : activeTab.key === "transport" ? (
+          <CostSection config={TRANSPORTS} tripId={trip.id} readOnly={trip.is_read_only} defaultDate={trip.start_date} />
         ) : (
           <p className={styles.muted}>Sekcja „{activeTab.label}” pojawi się w kolejnym kroku.</p>
         )}

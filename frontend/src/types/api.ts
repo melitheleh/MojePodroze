@@ -21,10 +21,15 @@ export interface LabeledValue<T extends string = string> {
   label: string;
 }
 
+export type PlaceKind = "accommodation" | "attraction";
+
 /** GET /api/dictionaries (pola używane przez frontend) */
 export interface Dictionaries {
   trip_characters: DictionaryEntry[];
   trip_types: LabeledValue<TripType>[];
+  transport_means: DictionaryEntry[];
+  expense_categories: DictionaryEntry[];
+  place_kinds: LabeledValue<PlaceKind>[];
 }
 
 /** Dane formularza podróży: POST /api/trips, PUT /api/trips/{id} */
@@ -97,6 +102,19 @@ export interface MealInput {
 export interface Meal extends MealInput {
   id: number;
   trip_id: number;
+  created_at: string;
+}
+
+/** Przejazd: GET /api/trips/{id}/transports (zapis: transport_mean_id zamiast obiektu) */
+export interface Transport {
+  id: number;
+  trip_id: number;
+  transport_mean: DictionaryEntry;
+  route_from: string;
+  route_to: string;
+  travel_date: string;
+  cost: number;
+  rating: number | null;
   created_at: string;
 }
 

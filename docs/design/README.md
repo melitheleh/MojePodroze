@@ -229,6 +229,12 @@ Elementy interaktywne mają `data-testid`, np. `trip-card`, `status-tab-all`, `s
 `input-meal-cost`, `select-meal-rating`, `btn-save-meal`, `btn-cancel-meal`, `meal-form-error`,
 `error-meal-{pole}` (`error-meal-dish`, `error-meal-restaurant-name`, `error-meal-meal-date`, `error-meal-cost`),
 `btn-edit-meal-{id}`, `btn-delete-meal-{id}`, `meal-delete-error`,
+transport (ten sam wzór co posiłki – `CostSection`): `transports-section`, `transports-loading`, `transports-error`,
+`transports-retry`, `transports-empty`, `transport-list`, `transport-{id}`, `transports-total`, `btn-add-transport`,
+`transport-form`, `select-transport-mean`, `input-transport-date`, `input-transport-from`, `input-transport-to`,
+`input-transport-cost`, `select-transport-rating`, `btn-save-transport`, `btn-cancel-transport`, `transport-form-error`,
+`error-transport-{pole}` (np. `error-transport-route-from`), `btn-edit-transport-{id}`, `btn-delete-transport-{id}`,
+`transport-delete-error`,
 `confirm-dialog` (okno potwierdzenia usunięcia, zamiast `window.confirm`), `btn-confirm-ok`, `btn-confirm-cancel`.
 
 ## Do dopilnowania

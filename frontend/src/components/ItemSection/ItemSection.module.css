@@ -176,9 +176,11 @@
   white-space: pre-line;
 }
 
-/* Główna treść pozycji (wpis pamiętnika): czytelny tekst z zachowanymi akapitami */
+/* Główna treść pozycji (wpis pamiętnika): czytelny tekst z zachowanymi akapitami, kursywą jak notatki z podróży
+   (prawdziwa kursywa Raleway 400 – wczytana w index.html) */
 .itemBody {
   font-size: 16px;
+  font-style: italic;
   line-height: 1.65;
   white-space: pre-line;
   overflow-wrap: anywhere;

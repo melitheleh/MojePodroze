@@ -1,8 +1,69 @@
 // Przepisy sekcji kosztowych dla CostSection: pola formularza (zgodne z backend/app/schemas/items.py)
 // i wygląd pozycji na liście. Nowa sekcja = nowy przepis tutaj + gałąź w TripDetailsPage.
-import type { Expense, Meal, Place, PlaceKind, Transport } from "../../types/api";
+import type { Expense, Flight, Meal, Place, PlaceKind, Transport } from "../../types/api";
 import type { SectionConfig } from "../../components/CostSection/CostSection";
-import { capitalize, formatDate } from "../../utils/format";
+import { capitalize, formatDate, formatDateTime } from "../../utils/format";
+
+const MAX_FLIGHT_HOURS = 48;
+
+/** "2026-09-21T10:30" + 48 h → "2026-09-23T10:30" (czas lokalny bez strefy, liczony jak UTC – bez zmian czasu) */
+function addHours(local: string, hours: number): string {
+  const [date, time] = local.split("T");
+  const [y, m, d] = date.split("-").map(Number);
+  const [hh, mm] = time.split(":").map(Number);
+  return new Date(Date.UTC(y, m - 1, d, hh + hours, mm)).toISOString().slice(0, 16);
+}
+
+// Loty – zakładka tylko dla podróży zagranicznej (available_sections z API)
+export const FLIGHTS: SectionConfig<Flight> = {
+  path: "flights",
+  title: "Loty",
+  testId: { single: "flight", plural: "flights" },
+  texts: {
+    add: "Dodaj lot",
+    new: "Nowy lot",
+    edit: "Edytuj lot",
+    remove: "Usuń lot",
+    removeTitle: "Usunąć lot?",
+    empty: "Nie dodano jeszcze żadnego lotu.",
+    loading: "Wczytywanie lotów…",
+    loadError: "Nie udało się wczytać lotów.",
+    saveError: "Nie udało się zapisać lotu.",
+    removeError: "Nie udało się usunąć lotu.",
+  },
+  fields: [
+    { name: "flight_number", label: "Numer lotu", kind: "text", testKey: "number", required: true, requiredMessage: "Podaj numer lotu, np. LO 327.", minLength: 2, maxLength: 10 },
+    { name: "departure_airport", label: "Lotnisko wylotu", kind: "text", testKey: "from", required: true, requiredMessage: "Podaj lotnisko wylotu.", maxLength: 100 },
+    { name: "arrival_airport", label: "Lotnisko przylotu", kind: "text", testKey: "to", required: true, requiredMessage: "Podaj lotnisko przylotu.", maxLength: 100 },
+    { name: "departure_at", label: "Wylot (data i godzina)", kind: "datetime", testKey: "departure", required: true, requiredMessage: "Podaj datę i godzinę wylotu." },
+    // Przylot może wypaść po końcu podróży (lot nocny) – zakres od wylotu do wylotu + 48 h (limits)
+    { name: "arrival_at", label: "Przylot (opcjonalnie)", kind: "datetime", testKey: "arrival", anyDate: true },
+    { name: "cost", label: "Koszt (PLN)", kind: "money", testKey: "cost" },
+    { name: "rating", label: "Ocena", kind: "rating", testKey: "rating" },
+  ],
+  // „Nie wcześniej niż wylot” jak w backendzie (FlightIn.check_times); limit 48 h tylko we frontendzie.
+  // Format "RRRR-MM-DDTGG:MM" da się porównać jak tekst.
+  validate: (v) => {
+    const errors: Record<string, string> = {};
+    if (v.departure_at && v.arrival_at) {
+      if (v.arrival_at < v.departure_at) errors.arrival_at = "Przylot nie może być wcześniejszy niż wylot.";
+      else if (v.arrival_at > addHours(v.departure_at, MAX_FLIGHT_HOURS))
+        errors.arrival_at = `Przylot najpóźniej ${MAX_FLIGHT_HOURS} godziny po wylocie.`;
+    }
+    return errors;
+  },
+  limits: (v) => ({
+    arrival_at: v.departure_at ? { min: v.departure_at, max: addHours(v.departure_at, MAX_FLIGHT_HOURS) } : {},
+  }),
+  itemTitle: (f) => `${f.departure_airport} → ${f.arrival_airport}`,
+  itemMeta: (f) => [
+    f.flight_number,
+    `wylot ${formatDateTime(f.departure_at)}`,
+    ...(f.arrival_at ? [`przylot ${formatDateTime(f.arrival_at)}`] : []),
+  ],
+  itemRating: (f) => f.rating,
+  removeMessage: (f) => `Lot ${f.flight_number} (${f.departure_airport} → ${f.arrival_airport})`,
+};
 
 export const MEALS: SectionConfig<Meal> = {
   path: "meals",
@@ -148,7 +209,8 @@ export const EXPENSES: SectionConfig<Expense> = {
       options: (d) => d.expense_categories.map((c) => ({ value: String(c.id), label: c.name })),
       fromItem: (e: Expense) => e.category.id,
     },
-    { name: "expense_date", label: "Data (opcjonalnie)", kind: "date", testKey: "date" },
+    // Dowolna data – np. ubezpieczenie albo bilety kupione przed wyjazdem
+    { name: "expense_date", label: "Data (opcjonalnie)", kind: "date", testKey: "date", anyDate: true },
     { name: "cost", label: "Kwota (PLN)", kind: "money", testKey: "cost" },
   ],
   itemTitle: (e) => e.description,

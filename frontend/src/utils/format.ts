@@ -4,6 +4,12 @@ export function formatDate(iso: string): string {
   return `${day}.${month}.${year}`;
 }
 
+/** "2026-09-21T10:30:00" → "21.09.2026, 10:30" */
+export function formatDateTime(iso: string): string {
+  const [date, time = ""] = iso.split("T");
+  return `${formatDate(date)}, ${time.slice(0, 5)}`;
+}
+
 /** Kwota w złotych, np. 427 → "427,00 zł" */
 export function formatPln(value: number): string {
   return value.toLocaleString("pl-PL", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " zł";

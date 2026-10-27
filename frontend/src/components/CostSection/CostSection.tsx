@@ -2,7 +2,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import type { Dictionaries } from "../../types/api";
 import { api, ApiError } from "../../api/client";
-import { formatPln } from "../../utils/format";
+import { formatDate, formatPln } from "../../utils/format";
 import { useConfirm } from "../../hooks/useConfirm";
 import styles from "./CostSection.module.css";
 
@@ -16,15 +16,18 @@ export interface FieldDef {
   /** Nazwa pola w API, np. "dish", "transport_mean_id" */
   name: string;
   label: string;
-  /** text – tekst, textarea – dłuższy tekst (na całą szerokość), date – data, money – kwota PLN,
-      rating – ocena 1–5 (opcjonalna), select – lista */
-  kind: "text" | "textarea" | "date" | "money" | "rating" | "select";
+  /** text – tekst, textarea – dłuższy tekst (na całą szerokość), date – data, datetime – data z godziną,
+      money – kwota PLN, rating – ocena 1–5 (opcjonalna), select – lista */
+  kind: "text" | "textarea" | "date" | "datetime" | "money" | "rating" | "select";
   /** Końcówka data-testid pola: input-{testId sekcji}-{testKey}, np. input-meal-restaurant */
   testKey: string;
   required?: boolean;
   /** Komunikat, gdy brak wymaganej wartości */
   requiredMessage?: string;
   maxLength?: number;
+  minLength?: number;
+  /** Data bez ograniczenia do terminu podróży (np. wydatek przed wyjazdem) */
+  anyDate?: boolean;
   /** Lista wyboru ze słownika (GET /api/dictionaries) */
   options?: (dict: Dictionaries) => Option[];
   /** Lista wyboru zwraca liczbę (id ze słownika), a nie tekst */
@@ -53,6 +56,10 @@ export interface SectionConfig<T extends { id: number; cost: number }> {
     removeError: string;
   };
   fields: FieldDef[];
+  /** Reguły obejmujące kilka pól (np. przylot nie wcześniej niż wylot) – błędy przy polach */
+  validate?: (values: Record<string, string>) => Record<string, string>;
+  /** Zakres w kalendarzu zależny od innych pól (np. przylot: od wylotu do wylotu + 48 h) */
+  limits?: (values: Record<string, string>) => Record<string, { min?: string; max?: string }>;
   /** Pierwsza linia pozycji (pogrubiona) */
   itemTitle: (item: T) => string;
   /** Druga linia: części rozdzielone „·” */
@@ -78,8 +85,17 @@ type FormMode<T> = { kind: "closed" } | { kind: "add"; from?: T } | { kind: "edi
 // Kwota jak w backendzie: liczba ≥ 0, najwyżej 2 miejsca po przecinku (przecinek albo kropka)
 const COST_PATTERN = /^\d{1,10}([.,]\d{1,2})?$/;
 
+/** Zakres kalendarza = termin podróży (data albo data z godziną) */
+function tripRange(field: FieldDef, startDate: string, endDate: string): { min?: string; max?: string } {
+  if (field.anyDate) return {};
+  if (field.kind === "date") return { min: startDate, max: endDate };
+  if (field.kind === "datetime") return { min: `${startDate}T00:00`, max: `${endDate}T23:59` };
+  return {};
+}
+
 // Te same zasady co w backendzie (backend/app/schemas/items.py) – tu, żeby pokazać błąd po polsku przy polu.
-function validate(fields: FieldDef[], values: Values): Errors {
+// Dodatkowo daty w terminie podróży (backend tego nie sprawdza – to pomoc przy wpisywaniu).
+function validate(fields: FieldDef[], values: Values, startDate: string, endDate: string): Errors {
   const errors: Errors = {};
   for (const field of fields) {
     const value = values[field.name].trim();
@@ -89,6 +105,12 @@ function validate(fields: FieldDef[], values: Values): Errors {
       errors[field.name] = field.requiredMessage ?? "To pole jest wymagane.";
     } else if (field.maxLength && value.length > field.maxLength) {
       errors[field.name] = `Najwyżej ${field.maxLength} znaków.`;
+    } else if (field.minLength && value !== "" && value.length < field.minLength) {
+      errors[field.name] = `Co najmniej ${field.minLength} znaki.`;
+    } else if (value !== "") {
+      const { min, max } = tripRange(field, startDate, endDate);
+      if ((min && value < min) || (max && value > max))
+        errors[field.name] = `Wybierz datę w terminie podróży: ${formatDate(startDate)} – ${formatDate(endDate)}.`;
     }
   }
   return errors;
@@ -113,7 +135,9 @@ function toValues(fields: FieldDef[], item: Record<string, unknown>): Values {
   for (const field of fields) {
     const raw = field.fromItem ? field.fromItem(item as never) : item[field.name];
     const text = raw === null || raw === undefined ? "" : String(raw);
-    values[field.name] = field.kind === "money" ? text.replace(".", ",") : text;
+    // money: przecinek po polsku; datetime: pole przyjmuje "RRRR-MM-DDTGG:MM" (bez sekund z API)
+    values[field.name] =
+      field.kind === "money" ? text.replace(".", ",") : field.kind === "datetime" ? text.slice(0, 16) : text;
   }
   return values;
 }
@@ -146,8 +170,9 @@ interface Props<T extends { id: number; cost: number }> {
   tripId: number;
   /** Archiwum: lista bez formularza i przycisków */
   readOnly: boolean;
-  /** Domyślna data nowej pozycji */
-  defaultDate: string;
+  /** Termin podróży: zakres kalendarzy; pierwszy dzień = domyślna data nowej pozycji */
+  startDate: string;
+  endDate: string;
 }
 
 // Sekcja kosztowa (posiłki, transport, …): lista z GET /api/trips/{id}/{path}, dodawanie (POST),
@@ -156,8 +181,10 @@ export default function CostSection<T extends { id: number; cost: number }>({
   config,
   tripId,
   readOnly,
-  defaultDate,
+  startDate,
+  endDate,
 }: Props<T>) {
+  const defaultDate = startDate;
   const { fields, texts, testId } = config;
   const needsDict = fields.some((f) => f.options);
   const [load, setLoad] = useState<LoadState<T>>({ status: "loading" });
@@ -218,7 +245,7 @@ export default function CostSection<T extends { id: number; cost: number }>({
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
-    const errors = validate(fields, values);
+    const errors = { ...config.validate?.(values), ...validate(fields, values, startDate, endDate) };
     setFieldErrors(errors);
     setFormError(null);
     if (Object.keys(errors).length > 0) {
@@ -315,7 +342,10 @@ export default function CostSection<T extends { id: number; cost: number }>({
         ) : (
           <input
             {...common}
-            type={field.kind === "date" ? "date" : "text"}
+            type={field.kind === "date" ? "date" : field.kind === "datetime" ? "datetime-local" : "text"}
+            // Kalendarz otwiera się na terminie podróży, dni spoza niego są wyszarzone
+            {...tripRange(field, startDate, endDate)}
+            {...config.limits?.(values)[field.name]}
             inputMode={field.kind === "money" ? "decimal" : undefined}
             onChange={(e) => set(field.name, e.target.value)}
           />

@@ -131,6 +131,20 @@ export interface Place {
   created_at: string;
 }
 
+/** Lot (tylko podróż zagraniczna): GET /api/trips/{id}/flights; daty z godziną bez strefy */
+export interface Flight {
+  id: number;
+  trip_id: number;
+  flight_number: string;
+  departure_airport: string;
+  arrival_airport: string;
+  departure_at: string; // RRRR-MM-DDTGG:MM:SS
+  arrival_at: string | null;
+  cost: number;
+  rating: number | null;
+  created_at: string;
+}
+
 /** Wydatek inny (bez oceny): GET /api/trips/{id}/expenses */
 export interface Expense {
   id: number;

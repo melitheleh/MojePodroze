@@ -10,7 +10,7 @@ import TripAlbum from "../../components/TripAlbum/TripAlbum";
 import { useTabIndicator } from "../../hooks/useTabIndicator";
 import { useConfirm } from "../../hooks/useConfirm";
 import CostSection from "../../components/CostSection/CostSection";
-import { EXPENSES, MEALS, PLACES, TRANSPORTS } from "./costSections";
+import { EXPENSES, FLIGHTS, MEALS, PLACES, TRANSPORTS } from "./costSections";
 import styles from "./TripDetailsPage.module.css";
 
 interface Tab {
@@ -188,6 +188,14 @@ export default function TripDetailsPage() {
   }
 
   // Najpierw „Cofnij” (pomocniczy), potem krok do przodu (główny) – jak w makiecie
+  // Wspólne dane dla sekcji kosztowych
+  const sectionProps = {
+    tripId: trip.id,
+    readOnly: trip.is_read_only,
+    startDate: trip.start_date,
+    endDate: trip.end_date,
+  };
+
   const transitions = [...trip.allowed_transitions].sort(
     (a, b) => STATUS_ORDER.indexOf(a) - STATUS_ORDER.indexOf(b),
   );
@@ -346,14 +354,16 @@ export default function TripDetailsPage() {
               />
             </section>
           </div>
+        ) : activeTab.key === "loty" ? (
+          <CostSection config={FLIGHTS} {...sectionProps} />
         ) : activeTab.key === "posilki" ? (
-          <CostSection config={MEALS} tripId={trip.id} readOnly={trip.is_read_only} defaultDate={trip.start_date} />
+          <CostSection config={MEALS} {...sectionProps} />
         ) : activeTab.key === "transport" ? (
-          <CostSection config={TRANSPORTS} tripId={trip.id} readOnly={trip.is_read_only} defaultDate={trip.start_date} />
+          <CostSection config={TRANSPORTS} {...sectionProps} />
         ) : activeTab.key === "noclegi" ? (
-          <CostSection config={PLACES} tripId={trip.id} readOnly={trip.is_read_only} defaultDate={trip.start_date} />
+          <CostSection config={PLACES} {...sectionProps} />
         ) : activeTab.key === "wydatki" ? (
-          <CostSection config={EXPENSES} tripId={trip.id} readOnly={trip.is_read_only} defaultDate={trip.start_date} />
+          <CostSection config={EXPENSES} {...sectionProps} />
         ) : (
           <p className={styles.muted}>Sekcja „{activeTab.label}” pojawi się w kolejnym kroku.</p>
         )}

@@ -1,5 +1,8 @@
 /* Tokeny stylu „Trouvaille” – źródło: docs/design/README.md */
 :root {
+  /* natywne kontrolki (kalendarz, listy, paski przewijania) w kolorach motywu */
+  color-scheme: light;
+
   --font-body: "Raleway", system-ui, sans-serif;
   --font-logo: "Yellowtail", cursive;
 
@@ -32,6 +35,9 @@
   --color-warning-bar: #d97605;
   --color-error-bg: #fee2e1;
   --color-error-text: #942827;
+  /* przycisk „Usuń” w oknie potwierdzenia: biały tekst na ciemnej czerwieni (8,4 : 1) */
+  --color-danger: #942827;
+  --color-danger-hover: #7a1f1e;
 
   --placeholder-1: #c8a178;
   --placeholder-2: #7f9ab7;
@@ -52,7 +58,9 @@
   --page-padding: 32px;
 }
 
+/* Tryb ciemny: zielonkawy grafit, przygaszony róż tylko do wyróżnienia aktywnej opcji */
 [data-theme="dark"] {
+  color-scheme: dark;
   --color-bg: #18201c;
   --color-surface: #212b26;
   --color-text: #e8ece9;
@@ -61,6 +69,12 @@
   --color-field-line: #7a8680;
   --color-divider: rgba(255, 255, 255, 0.08);
   --color-btn-secondary-border: #9fb8a6;
+  /* chwila kliknięcia: ciemniejsza szałwia, bo tekst jest jasny (6,8 : 1) */
+  --color-accent-active: #3f5448;
+  /* komunikaty na ciemnym tle: jasny tekst na przygaszonym tle (błąd 7,9 : 1, ostrzeżenie 8,9 : 1) */
+  --color-error-bg: #4a2423;
+  --color-error-text: #ffb4ae;
+  --color-warning-bg: #4a3d17;
   --status-planned: #7b9bf5;
   --widget-weather: #7b9bf5;
   --focus-ring: #9fb8a6;
@@ -72,6 +86,41 @@
   --color-highlight-border: rgba(242, 201, 220, 0.35);
   --color-highlight-text: #f6d6e5;
   --color-suggestion-bg: rgba(216, 167, 191, 0.1);
+}
+
+/* Wysoki kontrast (cel WCAG AAA 7 : 1): czarny tekst na białym, ciemne linie i ramki, wyraźny fokus.
+   Czerń dozwolona tylko tutaj – tryb domyślny zostaje bez czerni. */
+[data-theme="contrast"] {
+  color-scheme: light;
+  --color-bg: #ffffff;
+  --color-surface: #ffffff;
+  --color-brand-panel: #1f4a35;
+  --color-text: #000000; /* 21 : 1 */
+  --color-text-muted: #2b2b2b; /* 14,2 : 1 */
+  --color-text-soft: #2b2b2b;
+  --color-accent: #1f4a35; /* biały tekst 10,1 : 1 */
+  --color-accent-hover: #0f2f20; /* 14,5 : 1 */
+  --color-accent-active: #c9dccf; /* czarny tekst 14,6 : 1 */
+  --color-btn-secondary-border: #000000;
+  --color-field-line: #000000;
+  --color-divider: rgba(0, 0, 0, 0.25);
+  --status-planned: #1d4ed8; /* 6,7 : 1 */
+  --status-in-progress: #8a4b00;
+  --status-completed: #11632f;
+  --status-archived: #4b4b55;
+  --widget-next-trip: #8a4b00;
+  --widget-weather: #1d4ed8;
+  --widget-rates: #11632f;
+  --color-warning-bg: #fff3c4;
+  --color-warning-bar: #8a4b00;
+  --color-error-bg: #ffe1e0;
+  --color-error-text: #7a0f0f; /* 11 : 1 */
+  --color-danger: #7a0f0f;
+  --color-danger-hover: #4f0808;
+  --focus-ring: #000000;
+  /* karty z cienką czarną ramką 1 px zamiast miękkiego cienia; po najechaniu 2 px */
+  --shadow-card: 0 0 0 1px #000000;
+  --shadow-card-hover: 0 0 0 2px #000000;
 }
 
 @media (max-width: 640px) {

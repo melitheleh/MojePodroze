@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { KeyboardEvent } from "react";
 import { Link, NavLink, Outlet, useNavigate } from "react-router";
 import { clearUserId } from "../../api/client";
+import ThemeSwitcher from "../ThemeSwitcher/ThemeSwitcher";
 import styles from "./Layout.module.css";
 
 function navClass({ isActive }: { isActive: boolean }) {
@@ -66,6 +67,9 @@ export default function Layout() {
                 Statystyki
               </NavLink>
             </nav>
+            <div className={styles.theme}>
+              <ThemeSwitcher />
+            </div>
             <button type="button" className={styles.logout} onClick={logout} data-testid="btn-logout">
               Wyloguj
             </button>

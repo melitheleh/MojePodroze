@@ -94,8 +94,12 @@
   inset: -4px -10px;
 }
 
-.logout {
+/* Przełącznik wyglądu po prawej, przed „Wyloguj” */
+.theme {
   margin-left: auto;
+}
+
+.logout {
   padding: 6px 0;
   border: 0;
   background: none;
@@ -172,8 +176,11 @@
     box-shadow: inset 3px 0 0 var(--color-accent);
   }
 
-  .logout {
+  .theme {
     margin-left: 0;
+  }
+
+  .logout {
     width: 100%;
     border-top: 1px solid var(--color-divider);
   }

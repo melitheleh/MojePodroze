@@ -111,15 +111,11 @@
 .warning {
   border-left-color: var(--color-warning-bar);
   background: var(--color-warning-bg);
-  color: #27302c; /* jasne tło także w trybie ciemnym – ciemny tekst */
+  color: var(--color-text);
 }
 
 .warning .bar span {
   background: var(--color-warning-bar);
-}
-
-.warning .budgetTitle {
-  color: #5f4a1a;
 }
 
 /* Przekroczenie: czerwone tło i tekst jak komunikaty błędów */

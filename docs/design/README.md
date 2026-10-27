@@ -122,6 +122,22 @@ frontend/src/
 
 Przycisk główny w obu trybach: tło `--color-accent` (#5f7a6c), biały tekst.
 
+W trybie ciemnym dodatkowo (poprawki kontrastu): `--color-accent-active: #3f5448` (jasny tekst 6,8 : 1),
+`--color-error-bg: #4a2423`, `--color-error-text: #ffb4ae` (7,9 : 1), `--color-warning-bg: #4a3d17`;
+przycisk „Usuń” w oknie potwierdzenia ma własny token `--color-danger` (#942827, biały tekst).
+
+### Wybór wyglądu i wysoki kontrast
+
+Przełącznik **Jasny · Ciemny · Wysoki kontrast** w nagłówku (na telefonie w menu ☰) ustawia
+`data-theme="light" | "dark" | "contrast"` na `<html>` i zapamiętuje wybór w `localStorage` (klucz `theme`).
+Bez zapisanego wyboru – ustawienie systemu (`prefers-contrast: more`, `prefers-color-scheme: dark`), ustawiane
+skryptem w `index.html` przed pierwszym rysowaniem. `color-scheme` przełącza też natywne kontrolki (kalendarz, listy).
+W trybie ciemnym wybrana opcja przełącznika ma przygaszony róż (jedyne wyróżnienie z projektu).
+
+**Wysoki kontrast** (cel WCAG AAA 7 : 1) – jedyny tryb z czernią: tekst #000 (21 : 1), opisy #2b2b2b (14,2 : 1),
+przyciski #1f4a35 z białym tekstem (10,1 : 1), linie pól i obrysy czarne, karty z czarną ramką 1 px zamiast cienia (po najechaniu 2 px),
+ciemniejsze statusy (≥ 6,7 : 1), linki w tekście podkreślone, fokus: czarna obwódka 3 px + biały odstęp.
+
 ## Typografia
 
 | Rola | Krój | Uwagi |
@@ -209,7 +225,7 @@ Zasady przy kodowaniu:
 Elementy interaktywne mają `data-testid`, np. `trip-card`, `status-tab-all`, `status-tab-planned`, `status-tab-in-progress`,
 `status-tab-completed`, `status-tab-archived`, `btn-new-trip`, `input-search`, `input-weather-city`,
 `input-convert-amount`, `convert-result`, `widget-next-trip`, `widget-weather`, `widget-nbp`,
-`weather-error`, `weather-retry`, `theme-light`, `theme-dark`, `nav-trips`, `nav-stats`, `btn-logout`,
+`weather-error`, `weather-retry`, `theme-switcher`, `theme-light`, `theme-dark`, `theme-contrast`, `nav-trips`, `nav-stats`, `btn-logout`,
 `trip-status`, `countdown`, `weather-current`, `trips-loading`, `trips-error`, `trips-retry`, `trips-empty`,
 `login-form`, `input-login`, `input-password`, `btn-login`, `btn-register`, `login-error`, `error-login`,
 `error-password`, `weather-loading`, `weather-city-name`, `btn-weather-search`, `weather-search-error`,

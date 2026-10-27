@@ -69,11 +69,11 @@
 /* Potwierdzenie usunięcia: biały tekst na ciemnej czerwieni (8,4 : 1) – bez różu, wyraźnie „niebezpieczne” */
 .danger {
   border: 0;
-  background: var(--color-error-text);
+  background: var(--color-danger);
   color: #ffffff;
 }
 
 .danger:hover,
 .danger:focus-visible {
-  background: #7a1f1e;
+  background: var(--color-danger-hover);
 }

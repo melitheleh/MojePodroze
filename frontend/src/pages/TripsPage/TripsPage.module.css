@@ -354,6 +354,11 @@
   background: color-mix(in srgb, var(--widget-next-trip) 32%, var(--color-surface));
 }
 
+/* Wysoki kontrast: białe tło i czarna ramka jak wszystkie karty */
+:global([data-theme="contrast"]) .nextTripWidget {
+  background: var(--color-surface);
+}
+
 /* Tryb ciemny: słabsze zabarwienie – opis #a7b3ac zostaje ≥ 4,5 : 1 (przy 20% byłoby 4,3 : 1) */
 :global([data-theme="dark"]) .nextTripWidget {
   background: color-mix(in srgb, var(--widget-next-trip) 14%, var(--color-surface));
